@@ -31,4 +31,55 @@ class GeekofiaUi::ButtonHelperTest < ActionView::TestCase
     assert_raises(ArgumentError) { ui_button("x", variant: :huge) }
     assert_raises(ArgumentError) { ui_button("x", size: :xxl) }
   end
+
+  test "http verb is normalised" do
+    form = fragment(ui_button("Remove", href: "/x", method: "DELETE")).at("form")
+    assert form.at("input[name=_method][value=delete]")
+    assert fragment(ui_button("Go", href: "/x", method: "GET")).at("a")
+  end
+
+  test "GET params go into the url, not attributes" do
+    node = fragment(ui_button("Go", href: "/x", params: { kind: "health" })).at("a")
+    assert_equal "/x?kind=health", node["href"]
+    assert_nil node["params"]
+    assert_equal "/x?a=1&kind=health", fragment(ui_button("Go", href: "/x?a=1", params: { kind: "health" })).at("a")["href"]
+  end
+
+  test "button_to form defaults to inline-flex and passes params as hidden inputs" do
+    form = fragment(ui_button("Run", href: "/x", method: :post, params: { kind: "health" })).at("form")
+    assert_includes form["class"], "inline-flex"
+    assert form.at("input[type=hidden][name=kind][value=health]")
+  end
+
+  test "classes, data and aria land on the button, not the form" do
+    form = fragment(ui_button("Run", href: "/x", method: :post, class: "mine", data: { a: "1" }, aria: { label: "Run it" })).at("form")
+    button = form.at("button")
+    assert_includes button["class"], "mine"
+    assert_equal "1", button["data-a"]
+    assert_equal "Run it", button["aria-label"]
+    assert_not_includes form["class"].to_s, "mine"
+    assert_nil form["data-a"]
+  end
+
+  test "labels are escaped on every path" do
+    [ ui_button("<b>x</b>"), ui_button("<b>x</b>", href: "/x"), ui_button("<b>x</b>", href: "/x", method: :post) ].each do |html|
+      frag = fragment(html)
+      assert_nil frag.at("b")
+      assert_includes frag.text, "<b>x</b>"
+    end
+  end
+
+  test "caller classes beat variant colours and size-" do
+    node = fragment(ui_button("x", variant: :ghost, class: "text-destructive hover:text-destructive")).at("button")
+    assert_includes node["class"], "text-destructive"
+    assert_not_includes node["class"], "hover:text-accent-foreground"
+    icon = fragment(ui_button("x", size: :icon, class: "size-8")).at("button")["class"].split
+    assert_includes icon, "size-8"
+    assert_not_includes icon, "size-9"
+  end
+
+  test "link with icon and plain button type" do
+    assert fragment(ui_button("Go", href: "/x", icon: :copy)).at("a svg")
+    assert_equal "submit", fragment(ui_button("Go", type: "submit")).at("button")["type"]
+  end
 end

@@ -9,4 +9,8 @@ class GeekofiaUi::BadgeHelperTest < ActionView::TestCase
     assert_equal "ok", node.text.strip
     assert_raises(ArgumentError) { ui_badge("x", variant: :neon) }
   end
+
+  test "block content" do
+    assert_equal "Hi", fragment(ui_badge { "Hi" }).at("span").text.strip
+  end
 end

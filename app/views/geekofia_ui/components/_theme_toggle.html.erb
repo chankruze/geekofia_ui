@@ -1,0 +1,7 @@
+<%= ui_button variant: :ghost, size: :icon, class: "group",
+      data: { controller: "ui-theme", action: "ui-theme#cycle", theme: "system" },
+      aria: { label: "Toggle theme" }, title: "Theme: system", **attrs do %>
+  <span class="hidden group-data-[theme=light]:inline-flex"><%= ui_icon :sun %></span>
+  <span class="hidden group-data-[theme=dark]:inline-flex"><%= ui_icon :moon %></span>
+  <span class="hidden group-data-[theme=system]:inline-flex"><%= ui_icon :monitor %></span>
+<% end %>

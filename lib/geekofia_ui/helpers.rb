@@ -5,6 +5,10 @@ require "geekofia_ui/helpers/badge_helper"
 require "geekofia_ui/helpers/progress_helper"
 require "geekofia_ui/helpers/layout_helper"
 require "geekofia_ui/helpers/table_helper"
+require "geekofia_ui/helpers/feedback_helper"
+require "geekofia_ui/helpers/copy_helper"
+require "geekofia_ui/helpers/steps_helper"
+require "geekofia_ui/helpers/theme_helper"
 
 module GeekofiaUi
   # Mixed into ActionView::Base by the engine.
@@ -16,5 +20,9 @@ module GeekofiaUi
     include ProgressHelper
     include LayoutHelper
     include TableHelper
+    include FeedbackHelper
+    include CopyHelper
+    include StepsHelper
+    include ThemeHelper
   end
 end

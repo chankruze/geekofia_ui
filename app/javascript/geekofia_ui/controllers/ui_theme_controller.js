@@ -21,7 +21,7 @@ export default class extends Controller {
   apply(choice) {
     const api = window.GeekofiaUI
     if (typeof api?.applyTheme === "function") {
-      api.applyTheme()
+      api.applyTheme(choice)
     } else {
       const dark = choice === "dark" || (choice === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
       document.documentElement.classList.toggle("dark", dark)

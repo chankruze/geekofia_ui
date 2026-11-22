@@ -1,0 +1,7 @@
+<%= content_tag :div, class: css, **attrs do %>
+  <% if icon %><span class="mt-0.5 <%= icon_class %>"><%= ui_icon icon %></span><% end %>
+  <div class="min-w-0 flex-1 space-y-1">
+    <% if title %><p class="font-medium leading-tight"><%= title %></p><% end %>
+    <% if body.present? %><div class="text-muted-foreground [&_a]:font-medium [&_a]:underline"><%= body %></div><% end %>
+  </div>
+<% end %>

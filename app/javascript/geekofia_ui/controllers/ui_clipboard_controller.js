@@ -12,6 +12,7 @@ export default class extends Controller {
     let ok = false
     try {
       const text = this.resolveText()
+      if (!text) throw new Error("Nothing to copy")
       try {
         await navigator.clipboard.writeText(text)
         ok = true
@@ -29,7 +30,8 @@ export default class extends Controller {
     if (!this.sourceValue) return this.textValue
     const el = document.querySelector(this.sourceValue)
     if (!el) throw new Error(`No element matches ${this.sourceValue}`)
-    return el.value ?? el.textContent
+    const field = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
+    return field ? el.value : el.textContent
   }
 
   announce(ok) {
@@ -38,7 +40,8 @@ export default class extends Controller {
     this.clear()
     this.element.dataset[attr] = "true"
     if (this.hasStatusTarget) {
-      this.statusTarget.textContent = label
+      this.statusTarget.textContent = ""
+      this.statusTimer = setTimeout(() => { this.statusTarget.textContent = label }, 50)
     } else {
       this.previousLabel = this.element.getAttribute("aria-label")
       this.element.setAttribute("aria-label", label)
@@ -48,6 +51,7 @@ export default class extends Controller {
 
   clear() {
     clearTimeout(this.timer)
+    clearTimeout(this.statusTimer)
     delete this.element.dataset.copied
     delete this.element.dataset.copyFailed
     if (this.hasStatusTarget) {
@@ -65,13 +69,15 @@ export default class extends Controller {
     area.value = text
     area.setAttribute("readonly", "")
     area.style.position = "fixed"
+    area.style.top = "0"
+    area.style.left = "0"
     area.style.opacity = "0"
-    document.body.appendChild(area)
+    ;(this.element.closest("dialog") || document.body).appendChild(area)
     area.select()
     let ok = false
     try { ok = document.execCommand("copy") } catch { ok = false }
     area.remove()
-    previous?.focus?.()
+    previous?.focus?.({ preventScroll: true })
     return ok
   }
 

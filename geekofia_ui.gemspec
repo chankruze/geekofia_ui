@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir.chdir(__dir__) { Dir["{app,config,lib}/**/*", "MIT-LICENSE", "README.md"] }
 
-  spec.add_dependency "rails", ">= 8.0"
+  spec.add_dependency "rails", ">= 8.0", "< 9"
   spec.add_dependency "tailwindcss-rails", ">= 4.2"
   spec.add_dependency "importmap-rails", ">= 2.0"
   spec.add_dependency "stimulus-rails", ">= 1.3"

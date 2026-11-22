@@ -12,4 +12,11 @@ class GeekofiaUi::StepsHelperTest < ActionView::TestCase
     assert_equal "2", items.last.at("span").text.strip
     assert_equal "Test", items.last.at("p").text.strip
   end
+
+  test "done steps are announced and the list keeps its role" do
+    doc = fragment(ui_steps { |s| safe_join([ s.step(title: "A", done: true), s.step(title: "B") ]) })
+    assert_equal "list", doc.at("ol")["role"]
+    assert_includes doc.css("li").first.at("span.sr-only").text, "Completed"
+    assert_nil doc.css("li").last.at("span.sr-only")
+  end
 end

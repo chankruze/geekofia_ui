@@ -20,4 +20,25 @@ class GeekofiaUi::FeedbackHelperTest < ActionView::TestCase
     assert_includes doc.text, "Saved"
     assert_includes doc.css("[role=alert]").text, "Broken"
   end
+
+  test "flash joins array messages" do
+    flash[:notice] = [ "One", "Two" ]
+    doc = fragment(ui_flash)
+    assert_includes doc.text, "One"
+    assert_includes doc.text, "Two"
+    assert doc.at("br")
+  end
+
+  test "flash ignores unknown keys and non-string values" do
+    flash[:timedout] = "Session expired"
+    flash[:notice] = true
+    flash[:alert] = { "a" => 1 }
+    flash[:info] = [ nil, "" ]
+    assert_equal "", ui_flash.to_s.strip
+  end
+
+  test "alert with no title and no body renders nothing" do
+    assert_equal "", ui_alert { "" }.to_s
+    assert_equal "", ui_alert.to_s
+  end
 end

@@ -13,9 +13,12 @@ module GeekofiaUi
 
       def ui_alert(title: nil, variant: :info, icon: :auto, **attrs, &block)
         v = ui_option!(:variant, variant, ALERT_VARIANTS.keys)
+        body = block && capture(&block)
+        return "".html_safe if title.blank? && body.blank?
+
         render(partial: "geekofia_ui/components/alert", formats: [ :html ],
                locals: {
-                 title:, body: block && capture(&block), icon: icon == :auto ? ALERT_ICONS[v] : icon,
+                 title:, body:, icon: icon == :auto ? ALERT_ICONS[v] : icon,
                  icon_class: ALERT_ICON_COLORS[v],
                  css: ui_classes("relative flex gap-3 rounded-lg border px-4 py-3 text-sm text-foreground",
                                  ALERT_VARIANTS[v], attrs.delete(:class)),
@@ -24,10 +27,11 @@ module GeekofiaUi
       end
 
       def ui_flash
-        safe_join(flash.filter_map do |type, message|
-          next if message.blank?
+        safe_join(FLASH_VARIANTS.filter_map do |type, variant|
+          messages = Array(flash[type]).select { |m| m.is_a?(String) && m.present? }
+          next if messages.empty?
 
-          ui_alert(variant: FLASH_VARIANTS.fetch(type.to_s, :info), class: "mb-4") { message }
+          ui_alert(variant:, class: "mb-4") { safe_join(messages, tag.br) }
         end)
       end
     end

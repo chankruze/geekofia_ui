@@ -1,4 +1,4 @@
 <%= content_tag :div, class: css, **attrs do %>
-  <% if copy %><div class="absolute right-2 top-2"><%= ui_copy_button text, size: :icon, variant: :ghost %></div><% end %>
-  <pre class="overflow-x-auto p-4 pr-12 font-mono text-xs leading-relaxed <%= "whitespace-pre-wrap break-all" if wrap %>"><code<% if language %> class="language-<%= language %>"<% end %>><%= text %></code></pre>
+  <% if copy %><div class="absolute right-2 top-2 rounded-md bg-muted/80 backdrop-blur-sm"><%= ui_copy_button text, size: :icon, variant: :ghost, label: copy_label %></div><% end %>
+  <pre class="overflow-x-auto p-4 <%= "pr-12" if copy %> font-mono text-xs leading-relaxed <%= "whitespace-pre-wrap break-all" if wrap %>"><code<% if language.present? %> class="language-<%= language %>"<% end %>><%= text %></code></pre>
 <% end %>

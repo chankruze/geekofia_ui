@@ -15,7 +15,7 @@ module GeekofiaUi
       end
 
       def ui_steps(**attrs, &block)
-        content_tag(:ol, capture(StepsBuilder.new(self), &block), class: ui_classes("space-y-6", attrs.delete(:class)), **attrs)
+        content_tag(:ol, capture(StepsBuilder.new(self), &block), class: ui_classes("space-y-6", attrs.delete(:class)), role: "list", **attrs)
       end
     end
   end

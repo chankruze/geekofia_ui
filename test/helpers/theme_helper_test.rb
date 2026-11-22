@@ -18,6 +18,7 @@ class GeekofiaUi::ThemeHelperTest < ActionView::TestCase
     GeekofiaUi.configure do |c|
       c.font_provider = :bunny
       c.font_sans = "Inter"
+      c.font_sans = "Inter"
       c.icon_provider = :iconify
     end
     html = ui_head_tags
@@ -55,5 +56,45 @@ class GeekofiaUi::ThemeHelperTest < ActionView::TestCase
   ensure
     config.singleton_class.send(:remove_method, :fonts)
     config.singleton_class.send(:remove_method, :icons)
+  end
+
+  test "script and style carry the nonce" do
+    doc = fragment(ui_head_tags)
+    assert_equal "test-nonce", doc.at("script")["nonce"]
+    assert_equal "test-nonce", doc.at("style")["nonce"]
+  end
+
+  test "positional nonce providers are called without the keyword" do
+    positional = Object.new
+    def positional.stacks = { sans: "x", mono: "y" }
+    def positional.head_tags(nonce = nil) = nonce ? raise("keyword passed") : "<!-- positional -->".html_safe
+    config = GeekofiaUi.config
+    config.define_singleton_method(:icons) { positional }
+    assert_includes ui_head_tags, "positional"
+  ensure
+    config.singleton_class.send(:remove_method, :icons)
+  end
+
+  test "output order is script, style, fonts, icons" do
+    GeekofiaUi.configure do |c|
+      c.font_provider = :bunny
+      c.font_sans = "Inter"
+      c.icon_provider = :iconify
+    end
+    html = ui_head_tags
+    order = [ "geekofia-ui-theme", "--ui-font-sans", "fonts.bunny.net", "iconify-icon" ].map { |t| html.index(t) }
+    assert order.none?(&:nil?)
+    assert_equal order.sort, order
+  end
+end
+
+class GeekofiaUi::ThemeHelperNoNonceTest < ActionView::TestCase
+  teardown { GeekofiaUi.reset_config! }
+
+  test "renders without a nonce when the view has none" do
+    doc = fragment(ui_head_tags)
+    assert doc.at("script")
+    assert_nil doc.at("script")["nonce"]
+    assert_nil doc.at("style")["nonce"]
   end
 end

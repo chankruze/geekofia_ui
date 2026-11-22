@@ -1,9 +1,11 @@
-<%= ui_button variant: variant, size: size, class: "group", data: data, aria: { label: label }, **attrs do %>
-  <span class="inline-flex items-center gap-1.5 group-data-[copied=true]:hidden">
-    <%= ui_icon :copy, size: 14 %><% unless size.to_s == "icon" %><span><%= label %></span><% end %>
-  </span>
-  <span class="hidden items-center gap-1.5 text-success group-data-[copied=true]:inline-flex">
-    <%= ui_icon :check, size: 14 %><% unless size.to_s == "icon" %><span>Copied</span><% else %><span class="sr-only">Copied</span><% end %>
-  </span>
+<%= content_tag :span, class: "group inline-flex", data: data do %>
+  <%= ui_button variant: variant, size: size, data: { action: "ui-clipboard#copy" }, aria: { label: label }, **attrs do %>
+    <span class="inline-flex items-center gap-1.5 group-data-[copied=true]:hidden">
+      <%= ui_icon :copy, size: 14 %><% unless size.to_s == "icon" %><span><%= label %></span><% end %>
+    </span>
+    <span class="hidden items-center gap-1.5 text-success group-data-[copied=true]:inline-flex">
+      <%= ui_icon :check, size: 14 %><% unless size.to_s == "icon" %><span>Copied</span><% end %>
+    </span>
+  <% end %>
   <span class="sr-only" role="status" aria-live="polite" data-ui-clipboard-target="status"></span>
 <% end %>

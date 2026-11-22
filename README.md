@@ -1,28 +1,131 @@
-# GeekofiaUi
-Short description and motivation.
+# geekofia_ui
 
-## Usage
-How to use my plugin.
+shadcn-style UI components for Rails ERB + Tailwind CSS v4 apps: `ui_*` helpers backed by partials,
+a form builder, Stimulus controllers for copy-to-clipboard and theme switching, light/dark mode with
+a toggle, and pluggable icon and font providers.
 
-## Installation
-Add this line to your application's Gemfile:
+## Install
 
 ```ruby
-gem "geekofia_ui"
+# Gemfile
+gem "geekofia_ui", github: "chankruze/geekofia_ui"
 ```
 
-And then execute:
-```bash
-$ bundle
+```sh
+bundle install
+bin/rails g geekofia_ui:install   # Tailwind import, Stimulus registration, initializer, ui_head_tags
+bin/rails tailwindcss:build
 ```
 
-Or install it yourself as:
-```bash
-$ gem install geekofia_ui
+Requires Rails 8+ (< 9), tailwindcss-rails 4.2+, importmap-rails and stimulus-rails.
+
+The install generator also sets `ActionView::Base.field_error_proc` so Rails does not wrap invalid
+fields in `<div class="field_with_errors">`; the form builder renders errors itself.
+
+### Layout
+
+Put `ui_head_tags` in `<head>` **before** the stylesheet tag:
+
+```erb
+<head>
+  <%= ui_head_tags %>
+  <%= stylesheet_link_tag :app %>
+</head>
 ```
 
-## Contributing
-Contribution directions go here.
+It emits the pre-paint theme script (so there is no flash of the wrong theme), the font CSS variables,
+and any icon/font provider tags. It honors the CSP nonce when one is available.
 
-## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+## Components
+
+| Helper | Example |
+|---|---|
+| `ui_button` | `ui_button "Save", variant: :default, size: :md, icon: :check` |
+| `ui_badge` | `ui_badge "ok", variant: :success, dot: true` |
+| `ui_card` | `ui_card { \|c\| c.header(title: "Disks") { actions }; c.content { ... }; c.footer { ... } }` |
+| `ui_page_header` | `ui_page_header title: "Servers", description: "...", badge: ui_badge("ok") { actions }` |
+| `ui_empty_state` | `ui_empty_state title: "No servers", icon: :server { ui_button "Add" }` |
+| `ui_table` | `ui_table { \|t\| t.head { \|r\| r.cell "Name" }; t.body { t.row { \|r\| r.cell x } } }` |
+| `ui_progress` | `ui_progress value: 42, tone: :warning` |
+| `ui_alert` / `ui_flash` | `ui_alert title: "Heads up", variant: :warning { "..." }`; `ui_flash` in the layout |
+| `ui_copy_button` | `ui_copy_button text` or `ui_copy_button source: "#log"` |
+| `ui_code_block` | `ui_code_block cmd, wrap: true, copy: true, copy_label: "Copy"` |
+| `ui_steps` | `ui_steps { \|s\| s.step(title: "Copy key", done: true) { ... } }` |
+| `ui_theme_toggle` | cycles light, dark, then system |
+| `ui_icon` | `ui_icon :copy, size: 16, aria_label: nil` |
+
+Every helper accepts `class:` (merged; later utilities win) and passes other HTML attributes through.
+Variants and sizes are validated and raise `ArgumentError` listing the allowed values.
+
+### Buttons
+
+- `ui_button "Open", href: path` renders a link. With `params:`, they are merged into the query string.
+- Any `method:` other than GET renders `button_to`: `ui_button "Delete", href: path, method: :delete, params: { id: 1 }`.
+  `params:` become hidden inputs, `form:` sets attributes on the form, and `form_class` defaults to `inline-flex`.
+
+### Flash
+
+`ui_flash` renders only the `notice`, `alert`, `warning` and `info` keys.
+
+### Code blocks
+
+`ui_code_block` takes `wrap:` (wrap long lines), `copy:` (show the copy button) and `copy_label:`.
+
+### Forms
+
+```erb
+<%= form_with model: @thing, builder: GeekofiaUi::FormBuilder do |f| %>
+  <%= f.ui_text_field :name, hint: "A hint" %>
+  <%= f.ui_submit "Save" %>
+<% end %>
+```
+
+Fields: `ui_text_field`, `ui_email_field`, `ui_password_field`, `ui_number_field`, `ui_text_area`,
+`ui_select`, `ui_submit`.
+
+- `label: false` renders an sr-only label (still accessible).
+- `hint:` adds helper text; errors are rendered under the field and linked through `aria-describedby`.
+- When the same form appears twice on a page, use `form_with namespace: "a"` so ids stay unique.
+
+## Theme
+
+Colors are CSS variables (`--background`, `--primary`, `--success`, ...) mapped to Tailwind utilities
+(`bg-background`, `text-muted-foreground`, ...). Override any variable after the import to rebrand.
+The theme toggle cycles light, dark, then system.
+
+## Icons and fonts
+
+```ruby
+GeekofiaUi.configure do |c|
+  c.icon_provider = :lucide            # :iconify, :font_awesome, :material_symbols, or an object
+  c.font_provider = :bunny             # :system (default), :google, :self_hosted, or an object
+  c.font_sans = "Inter"
+  c.font_mono = "JetBrains Mono"
+end
+```
+
+Semantic icon names are Symbols (`ui_icon(:copy)`): `copy check sun moon monitor info alert_triangle
+alert_circle check_circle x plus server terminal refresh pencil trash external_link help arrow_left
+log_out hard_drive key play plug`. Strings are raw provider names and are passed through as-is.
+With iconify, `icon_set` qualifies any name that is not already `set:name`. `icon_aliases` override
+semantic names (`{ copy: "clipboard" }`).
+
+Config notes:
+
+- Assign `icon_aliases` and `font_weights` new values rather than mutating them; the defaults are frozen.
+- Font family names may only contain letters, digits, space, `_`, `.`, `'` and `-`. Anything else raises when rendered.
+
+Custom providers:
+
+- Icon providers implement `render(name, size:, css_class:, attrs:)` and `head_tags(nonce: nil)`.
+  The `nonce` keyword is optional; providers that do not accept it are called without one.
+- Font providers implement `head_tags(nonce: nil)` and `stacks`, returning `{ sans:, mono: }`.
+
+## Development
+
+```sh
+bin/rails test
+bin/sync-lucide /path/to/lucide-static/package   # refresh bundled icons
+```
+
+Lucide icons are ISC-licensed (see `lib/geekofia_ui/icons/lucide/LICENSE`).

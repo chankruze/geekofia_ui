@@ -12,7 +12,7 @@ module GeekofiaUi
       JS_LINE = %(eagerLoadControllersFrom("geekofia_ui/controllers", application))
       LAYOUT = "app/views/layouts/application.html.erb"
 
-      TAILWIND_IMPORT = /^@import\s+["']tailwindcss["'][^;\n]*;?[ \t]*(\r?\n|\z)/
+      TAILWIND_IMPORT = /^[ \t]*@import\s+["']tailwindcss["'][^;\n]*;?[ \t]*(\r?\n|\z)/
       STYLESHEET_TAG = /^[ \t]*<%=\s*stylesheet_link_tag/
 
       def add_tailwind_import
@@ -21,7 +21,7 @@ module GeekofiaUi
         match = read(CSS_FILE).match(TAILWIND_IMPORT)
         return say_status(:skip, %(add #{CSS_IMPORT} after @import "tailwindcss" in #{CSS_FILE}), :yellow) unless match
         text = match[0].match?(/\n\z/) ? "#{CSS_IMPORT}\n" : "\n#{CSS_IMPORT}\n"
-        inject_into_file CSS_FILE, text, after: TAILWIND_IMPORT
+        inject_into_file CSS_FILE, text, after: /\A#{Regexp.escape(match.pre_match + match[0])}/
       end
 
       def register_controllers
@@ -39,8 +39,9 @@ module GeekofiaUi
         return skip(LAYOUT) unless exist?(LAYOUT)
         content = read(LAYOUT)
         return identical(LAYOUT) if content.include?("ui_head_tags")
-        return say_status(:skip, "add <%= ui_head_tags %> inside <head> of #{LAYOUT}", :yellow) unless content.match?(STYLESHEET_TAG)
-        inject_into_file LAYOUT, "    <%= ui_head_tags %>\n", before: STYLESHEET_TAG
+        match = content.match(STYLESHEET_TAG)
+        return say_status(:skip, "add <%= ui_head_tags %> inside <head> of #{LAYOUT}", :yellow) unless match
+        inject_into_file LAYOUT, "    <%= ui_head_tags %>\n", after: /\A#{Regexp.escape(match.pre_match)}/
       end
 
       private

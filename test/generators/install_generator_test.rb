@@ -90,6 +90,27 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
     assert_match(/identical/, out)
   end
 
+  test "layout with two stylesheet tags gets head tags once before the first" do
+    write "app/views/layouts/application.html.erb",
+          %(<head>\n  <%= stylesheet_link_tag :app %>\n  <%= stylesheet_link_tag :other %>\n</head>\n)
+    run_generator
+    layout = read("app/views/layouts/application.html.erb")
+    assert_equal 1, layout.scan("ui_head_tags").size
+    assert layout.index("ui_head_tags") < layout.index("stylesheet_link_tag :app")
+  end
+
+  test "css with two tailwind imports gets the import once" do
+    write "app/assets/tailwind/application.css", %(@import "tailwindcss";\n@import "tailwindcss";\n)
+    run_generator
+    assert_equal 1, read("app/assets/tailwind/application.css").scan("geekofia_ui").size
+  end
+
+  test "css import matches an indented tailwind import" do
+    write "app/assets/tailwind/application.css", %(  @import "tailwindcss";\n)
+    run_generator
+    assert_equal %(  @import "tailwindcss";\n@import "../builds/tailwind/geekofia_ui";\n), read("app/assets/tailwind/application.css")
+  end
+
   private
 
   def write(path, content) = File.write(File.join(destination_root, path), content)

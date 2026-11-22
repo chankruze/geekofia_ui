@@ -8,7 +8,7 @@ a toggle, and pluggable icon and font providers.
 
 ```ruby
 # Gemfile
-gem "geekofia_ui", github: "chankruze/geekofia_ui"
+gem "geekofia_ui", github: "chankruze/geekofia_ui", tag: "v0.1.1"
 ```
 
 ```sh
@@ -17,10 +17,11 @@ bin/rails g geekofia_ui:install   # Tailwind import, Stimulus registration, init
 bin/rails tailwindcss:build
 ```
 
-Requires Rails 8+ (< 9), tailwindcss-rails 4.2+, importmap-rails and stimulus-rails.
+Requires Ruby >= 3.3, Rails 8+ (< 9), Propshaft, tailwindcss-rails 4.2+, importmap-rails and stimulus-rails.
 
-The install generator also sets `ActionView::Base.field_error_proc` so Rails does not wrap invalid
-fields in `<div class="field_with_errors">`; the form builder renders errors itself.
+The install generator also sets `ActionView::Base.field_error_proc` in the initializer. This is global to the app:
+Rails no longer wraps invalid fields in `<div class="field_with_errors">` anywhere, because the form builder
+renders errors itself.
 
 ### Layout
 
@@ -40,26 +41,61 @@ and any icon/font provider tags. It honors the CSP nonce when one is available.
 
 | Helper | Example |
 |---|---|
-| `ui_button` | `ui_button "Save", variant: :default, size: :md, icon: :check` |
-| `ui_badge` | `ui_badge "ok", variant: :success, dot: true` |
-| `ui_card` | `ui_card { \|c\| c.header(title: "Disks") { actions }; c.content { ... }; c.footer { ... } }` |
-| `ui_page_header` | `ui_page_header title: "Servers", description: "...", badge: ui_badge("ok") { actions }` |
-| `ui_empty_state` | `ui_empty_state title: "No servers", icon: :server { ui_button "Add" }` |
-| `ui_table` | `ui_table { \|t\| t.head { \|r\| r.cell "Name" }; t.body { t.row { \|r\| r.cell x } } }` |
-| `ui_progress` | `ui_progress value: 42, tone: :warning` |
-| `ui_alert` / `ui_flash` | `ui_alert title: "Heads up", variant: :warning { "..." }`; `ui_flash` in the layout |
-| `ui_copy_button` | `ui_copy_button text` or `ui_copy_button source: "#log"` |
-| `ui_code_block` | `ui_code_block cmd, wrap: true, copy: true, copy_label: "Copy"` |
-| `ui_steps` | `ui_steps { \|s\| s.step(title: "Copy key", done: true) { ... } }` |
+| `ui_button` | `ui_button("Save", variant: :default, size: :md, icon: :check)` |
+| `ui_badge` | `ui_badge("ok", variant: :success, dot: true)` |
+| `ui_card` | see below |
+| `ui_page_header` | see below |
+| `ui_empty_state` | see below |
+| `ui_table` | see below |
+| `ui_progress` | `ui_progress(value: 42, tone: :warning)` |
+| `ui_alert` / `ui_flash` | see below; put `ui_flash` in the layout |
+| `ui_copy_button` | `ui_copy_button("text")` or `ui_copy_button(source: "#log")` |
+| `ui_code_block` | `ui_code_block(cmd, wrap: true, copy: true, copy_label: "Copy", language: :sh)` |
+| `ui_steps` | see below |
 | `ui_theme_toggle` | cycles light, dark, then system |
-| `ui_icon` | `ui_icon :copy, size: 16, aria_label: nil` |
+| `ui_icon` | `ui_icon(:copy, size: 16, aria_label: nil)`; `size` goes through `Integer()` and raises if invalid |
+
+```erb
+<%= ui_page_header(title: "Servers", description: "Office LAN", badge: ui_badge("ok"), title_tag: :h1) do %>
+  <%= ui_button "Add", icon: :plus %>
+<% end %>
+
+<%= ui_empty_state(title: "No servers", description: "Add one to begin", icon: :server) do %>
+  <%= ui_button "Add" %>
+<% end %>
+
+<%= ui_alert(title: "Heads up", variant: :warning) do %>
+  Something to know.
+<% end %>
+
+<%= ui_card do |c| %>
+  <%= c.header(title: "Disks", description: "Mounted volumes") { ui_button "Refresh" } %>
+  <%= c.content do %>
+    <%= ui_table do |t| %>
+      <%= t.head { |r| safe_join([ r.cell("Name"), r.cell("Usage") ]) } %>
+      <%= t.body do %>
+        <%= t.row { |r| safe_join([ r.cell("/"), r.cell { ui_progress(value: 45) } ]) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= c.footer { "Updated just now" } %>
+<% end %>
+
+<%= ui_steps do |s| %>
+  <%= s.step(title: "Copy key", done: true) { "Paste it on the server" } %>
+  <%= s.step(title: "Test connection") %>
+<% end %>
+```
+
+`ui_page_header`, `ui_empty_state`, `c.header` and `s.step` also take `class:` and HTML attributes, applied to
+their root element.
 
 Every helper accepts `class:` (merged; later utilities win) and passes other HTML attributes through.
 Variants and sizes are validated and raise `ArgumentError` listing the allowed values.
 
 ### Buttons
 
-- `ui_button "Open", href: path` renders a link. With `params:`, they are merged into the query string.
+- `ui_button "Open", href: path` renders a link. With `params:`, they are appended to the query string.
 - Any `method:` other than GET renders `button_to`: `ui_button "Delete", href: path, method: :delete, params: { id: 1 }`.
   `params:` become hidden inputs, `form:` sets attributes on the form, and `form_class` defaults to `inline-flex`.
 
@@ -69,7 +105,13 @@ Variants and sizes are validated and raise `ArgumentError` listing the allowed v
 
 ### Code blocks
 
-`ui_code_block` takes `wrap:` (wrap long lines), `copy:` (show the copy button) and `copy_label:`.
+`ui_code_block` takes `wrap:` (wrap long lines), `copy:` (show the copy button), `copy_label:` and
+`language:` (adds a `language-*` class to the `<code>` element).
+
+### Copy button
+
+`ui_copy_button` renders a wrapper span around the button. `data:` goes on the wrapper (where the Stimulus
+controller lives) and `class:` goes on the button.
 
 ### Forms
 
@@ -84,6 +126,8 @@ Fields: `ui_text_field`, `ui_email_field`, `ui_password_field`, `ui_number_field
 `ui_select`, `ui_submit`.
 
 - `label: false` renders an sr-only label (still accessible).
+- `ui_select(:kind, choices, { label: "Kind", hint: "Pick one" }, { class: "..." })` takes `label:` and `hint:` in
+  the options hash (third argument); HTML options come fourth.
 - `hint:` adds helper text; errors are rendered under the field and linked through `aria-describedby`.
 - When the same form appears twice on a page, use `form_with namespace: "a"` so ids stay unique.
 

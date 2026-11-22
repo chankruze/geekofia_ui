@@ -5,24 +5,41 @@ module GeekofiaUi
         @config = config
       end
 
-      def head_tags = "".html_safe
+      def head_tags(nonce: nil) = "".html_safe
 
       private
 
-      # Alias first, then the provider's semantic map, otherwise the name as given.
+      # Aliases win (for Symbols and Strings alike). Otherwise only a Symbol is a
+      # semantic name mapped by the provider; a String is a raw provider name.
       def provider_name(name, map)
-        key = name.to_s.to_sym
-        aliased = @config.icon_aliases[key]
+        aliased = @config.icon_aliases[name.to_s.to_sym]
         return aliased.to_s if aliased
-        map.fetch(key, name.to_s)
+        name.is_a?(Symbol) ? map.fetch(name, name.to_s) : name.to_s
       end
 
-      def element(tag, attributes, inner = "")
-        attrs = attributes.compact.map { |k, v| %(#{k}="#{ERB::Util.html_escape(v)}") }.join(" ")
-        "<#{tag} #{attrs}>#{inner}</#{tag}>".html_safe
+      def element(tag, attributes, inner = "".html_safe)
+        ActionController::Base.helpers.content_tag(tag, inner, attributes)
       end
 
-      def classes(*parts) = parts.compact.join(" ")
+      # Merges required classes, css_class and any class given in attrs.
+      def merged_class(required, css_class, attrs)
+        extra = attrs[:class] || attrs["class"]
+        GeekofiaUi::ClassMerge.call(*required, css_class, extra)
+      end
+
+      def without_class(attrs) = attrs.except(:class, "class")
+
+      def tag_attrs(base, required, css_class, attrs)
+        base.merge(without_class(attrs)).merge(class: merged_class(required, css_class, attrs))
+      end
+
+      def script_tag(src, nonce, **extra)
+        ActionController::Base.helpers.content_tag(:script, "".html_safe, { src: src, nonce: nonce }.merge(extra))
+      end
+
+      def stylesheet_tag(href, nonce)
+        ActionController::Base.helpers.tag.link(rel: "stylesheet", href: href, nonce: nonce)
+      end
     end
   end
 end

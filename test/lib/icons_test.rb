@@ -68,4 +68,101 @@ class GeekofiaUi::IconsTest < ActiveSupport::TestCase
     GeekofiaUi.config.icon_provider = :bogus
     assert_raises(ArgumentError) { GeekofiaUi.config.icons }
   end
+
+  test "semantic maps cover exactly the semantic names and lucide files are bundled" do
+    sem = GeekofiaUi::Icons::SEMANTIC.sort
+    assert_equal sem, GeekofiaUi::Icons::LUCIDE_NAMES.keys.sort
+    assert_equal sem, GeekofiaUi::Icons::FontAwesome::MAP.keys.sort
+    assert_equal sem, GeekofiaUi::Icons::MaterialSymbols::MAP.keys.sort
+    GeekofiaUi::Icons::LUCIDE_NAMES.each_value do |file|
+      assert GeekofiaUi::Icons::Lucide::SVGS.key?(file), "bundled svg for #{file}"
+    end
+  end
+
+  test "attributes are escaped, nested hashes expand, nil and false drop, true is bare" do
+    icons = provider(:iconify)
+    node = fragment(icons.render(:copy, size: 16, css_class: nil,
+      attrs: { data: { foo: "bar" }, hidden: false, title: %(a "q" <b>), alt: nil, disabled: true })).at("iconify-icon")
+    assert_equal "bar", node["data-foo"]
+    assert_nil node["hidden"]
+    assert_nil node["alt"]
+    assert_equal %(a "q" <b>), node["title"]
+    assert node.key?("disabled")
+    html = icons.render(:copy, size: 16, css_class: nil, attrs: { title: "<script>" }).to_s
+    assert_not_includes html, "<script>"
+  end
+
+  test "attribute keys cannot inject attributes" do
+    html = provider(:lucide).render(:copy, size: 16, css_class: nil, attrs: { "x onmouseover=alert(1) y": "1" })
+    node = fragment(html).at("svg")
+    assert_nil node["onmouseover"]
+    assert_not_includes node.attribute_nodes.map(&:name), "x onmouseover=alert(1) y"
+  end
+
+  test "svg attribute names keep their case and dashes" do
+    html = provider(:lucide).render(:copy, size: 16, css_class: nil, attrs: {}).to_s
+    assert_includes html, 'viewBox="0 0 24 24"'
+    assert_includes html, 'stroke-width="2"'
+  end
+
+  test "strings are raw provider names and symbols are semantic on every provider" do
+    assert_raises(ArgumentError) { provider(:lucide).render("alert_triangle", size: 16, css_class: nil, attrs: {}) }
+    assert_includes fragment(provider(:font_awesome).render("alert_triangle", size: 16, css_class: nil, attrs: {})).at("i")["class"], "fa-alert_triangle"
+    assert_equal "alert_triangle", fragment(provider(:iconify, icon_set: "mdi").render("alert_triangle", size: 16, css_class: nil, attrs: {})).at("iconify-icon")["icon"].split(":").last
+    assert_equal "alert_triangle", fragment(provider(:material_symbols).render("alert_triangle", size: 16, css_class: nil, attrs: {})).at("span").text
+    assert provider(:lucide).render(:alert_triangle, size: 16, css_class: nil, attrs: {}).present?
+    assert_includes fragment(provider(:font_awesome).render(:alert_triangle, size: 16, css_class: nil, attrs: {})).at("i")["class"], "fa-triangle-exclamation"
+    assert_equal "lucide:triangle-alert", fragment(provider(:iconify).render(:alert_triangle, size: 16, css_class: nil, attrs: {})).at("iconify-icon")["icon"]
+    assert_equal "warning", fragment(provider(:material_symbols).render(:alert_triangle, size: 16, css_class: nil, attrs: {})).at("span").text
+  end
+
+  test "string alias keys are normalized and aliases work on lucide" do
+    icons = provider(:iconify, icon_aliases: { "copy" => "ph:copy" })
+    assert_equal "ph:copy", fragment(icons.render(:copy, size: 16, css_class: nil, attrs: {})).at("iconify-icon")["icon"]
+    lucide = provider(:lucide, icon_aliases: { copy: "check" })
+    assert_includes lucide.render(:copy, size: 16, css_class: nil, attrs: {}).to_s, "M20 6 9 17l-5-5"
+  end
+
+  test "head tags carry the nonce only when given" do
+    {
+      iconify: "script", font_awesome: "link", material_symbols: "link"
+    }.each do |name, tag|
+      icons = provider(name)
+      assert_equal "abc123", fragment(icons.head_tags(nonce: "abc123")).at(tag)["nonce"], name.to_s
+      assert_nil fragment(icons.head_tags).at(tag)["nonce"], name.to_s
+    end
+    kit = provider(:font_awesome, font_awesome_kit: "https://kit.fontawesome.com/abc.js")
+    assert_equal "n1", fragment(kit.head_tags(nonce: "n1")).at("script")["nonce"]
+    assert_nil fragment(kit.head_tags).at("script")["nonce"]
+    assert_equal "", provider(:lucide).head_tags(nonce: "x").to_s
+  end
+
+  test "lucide misses in production log and render nothing" do
+    icons = provider(:lucide)
+    logged = []
+    logger = Object.new
+    logger.define_singleton_method(:warn) { |msg| logged << msg }
+    original_env = Rails.env
+    original_logger = Rails.logger
+    begin
+      Rails.env = ActiveSupport::EnvironmentInquirer.new("production")
+      Rails.logger = logger
+      assert_equal "", icons.render(:nope, size: 16, css_class: nil, attrs: {}).to_s
+    ensure
+      Rails.env = original_env
+      Rails.logger = original_logger
+    end
+    assert_equal 1, logged.size
+    assert_includes logged.first, "nope"
+  end
+
+  test "a class attribute extends rather than replaces required classes" do
+    node = fragment(provider(:font_awesome).render(:copy, size: 16, css_class: "a", attrs: { class: "text-red-500" })).at("i")
+    assert_equal %w[fa-solid fa-copy], node["class"].split.first(2)
+    assert_includes node["class"], "text-red-500"
+    assert_includes node["class"], "a"
+    svg = fragment(provider(:lucide).render(:copy, size: 16, css_class: nil, attrs: { "class" => "x" })).at("svg")
+    assert_includes svg["class"], "shrink-0"
+    assert_includes svg["class"], "x"
+  end
 end

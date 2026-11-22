@@ -11,17 +11,17 @@ module GeekofiaUi
       }.freeze
 
       def render(name, size:, css_class: nil, attrs: {})
-        element(:i, {
-          class: classes("fa-#{@config.font_awesome_style}", "fa-#{provider_name(name, MAP)}", "shrink-0", css_class),
+        required = [ "fa-#{@config.font_awesome_style}", "fa-#{provider_name(name, MAP)}", "shrink-0" ]
+        element(:i, tag_attrs({
           style: "font-size: #{size}px; width: #{size}px; text-align: center; line-height: 1"
-        }.merge(attrs))
+        }, required, css_class, attrs))
       end
 
-      def head_tags
+      def head_tags(nonce: nil)
         if @config.font_awesome_kit
-          %(<script src="#{ERB::Util.html_escape(@config.font_awesome_kit)}" crossorigin="anonymous"></script>).html_safe
+          script_tag(@config.font_awesome_kit, nonce, crossorigin: "anonymous")
         else
-          %(<link rel="stylesheet" href="#{CSS}">).html_safe
+          stylesheet_tag(CSS, nonce)
         end
       end
     end

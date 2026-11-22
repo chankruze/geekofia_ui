@@ -15,7 +15,12 @@ module GeekofiaUi
       @font_weights = [ 400, 500, 600, 700 ].freeze
     end
 
-    %i[icon_provider icon_set icon_aliases font_awesome_kit font_awesome_style].each do |name|
+    def icon_aliases=(value)
+      @icons = nil
+      @icon_aliases = value.to_h.transform_keys(&:to_sym).freeze
+    end
+
+    %i[icon_provider icon_set font_awesome_kit font_awesome_style].each do |name|
       define_method(:"#{name}=") { |value| @icons = nil; instance_variable_set(:"@#{name}", value) }
     end
 

@@ -11,13 +11,12 @@ module GeekofiaUi
       }.freeze
 
       def render(name, size:, css_class: nil, attrs: {})
-        element(:span, {
-          class: classes("material-symbols-outlined", "shrink-0", css_class),
+        element(:span, tag_attrs({
           style: "font-size: #{size}px; width: #{size}px; height: #{size}px; overflow: hidden; line-height: 1"
-        }.merge(attrs), ERB::Util.html_escape(provider_name(name, MAP)))
+        }, %w[material-symbols-outlined shrink-0], css_class, attrs), provider_name(name, MAP))
       end
 
-      def head_tags = %(<link rel="stylesheet" href="#{ERB::Util.html_escape(CSS)}">).html_safe
+      def head_tags(nonce: nil) = stylesheet_tag(CSS, nonce)
     end
   end
 end

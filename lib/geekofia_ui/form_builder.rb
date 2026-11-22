@@ -44,7 +44,7 @@ module GeekofiaUi
 
       @template.content_tag(:div, class: "space-y-2", data: { ui_field: method }) do
         @template.safe_join([
-          ui_label(method, label, base_id),
+          ui_label(method, label, options),
           yield(aria),
           (@template.content_tag(:p, hint, id: hint_id, class: "text-xs text-muted-foreground") if hint.present?),
           (@template.content_tag(:p, messages.to_sentence, id: error_id, class: "text-xs font-medium text-destructive") if messages.any?)
@@ -52,10 +52,14 @@ module GeekofiaUi
       end
     end
 
-    def ui_label(method, label, base_id)
+    # Only an explicit id: overrides the label's for; otherwise Rails derives it
+    # (including form_with namespace:) exactly as it does for the input.
+    def ui_label(method, label, options)
       css = label == false ? "sr-only" : LABEL
       text = label == false ? nil : label
-      label(method, text, for: base_id, class: css)
+      label_options = { class: css }
+      label_options[:for] = options[:id] if options[:id].present?
+      label(method, text, **label_options)
     end
 
     def control_options(options, base, aria)

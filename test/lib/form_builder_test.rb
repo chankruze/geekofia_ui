@@ -166,4 +166,25 @@ class GeekofiaUi::FormBuilderTest < ActionView::TestCase
     assert_equal "1", input["min"]
     assert_equal "65535", input["max"]
   end
+
+  test "namespaced forms keep label, input, hint and error ids in sync" do
+    thing = Thing.new.tap(&:validate)
+    doc = fragment(form_with(model: thing, url: "/things", scope: :thing, namespace: "a", builder: GeekofiaUi::FormBuilder) { |f|
+      f.ui_text_field(:name, hint: "h")
+    })
+    input = doc.at("input")
+    assert_equal "a_thing_name", input["id"]
+    assert_equal input["id"], doc.at("label")["for"]
+    ids = input["aria-describedby"].split
+    assert_equal 2, ids.size
+    ids.each { |id| assert doc.at("##{id}"), "missing #{id}" }
+  end
+
+  test "sr-only label points at the namespaced input" do
+    doc = fragment(form_with(model: Thing.new, url: "/things", scope: :thing, namespace: "b", builder: GeekofiaUi::FormBuilder) { |f|
+      f.ui_text_field(:name, label: false)
+    })
+    assert_includes doc.at("label")["class"], "sr-only"
+    assert_equal doc.at("input")["id"], doc.at("label")["for"]
+  end
 end

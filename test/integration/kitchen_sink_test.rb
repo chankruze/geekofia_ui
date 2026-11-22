@@ -12,5 +12,9 @@ class KitchenSinkTest < ActionDispatch::IntegrationTest
     assert_select "[role=progressbar]"
     assert_select "ol > li", 2
     assert_select "form input#thing_name"
+    assert_select "[role=status]", /Saved/
+    assert_select "h3", "Nothing here"
+    assert_select "pre code"
+    assert_select "h2", "Table"
   end
 end

@@ -97,4 +97,15 @@ class GeekofiaUi::ThemeHelperNoNonceTest < ActionView::TestCase
     assert_nil doc.at("script")["nonce"]
     assert_nil doc.at("style")["nonce"]
   end
+
+  test "toggle merges caller attrs instead of overriding" do
+    node = fragment(ui_theme_toggle(class: "ml-2", data: { foo: "bar" }, aria: { pressed: "false" }, id: "tt")).at("button")
+    assert_includes node["class"], "group"
+    assert_includes node["class"], "ml-2"
+    assert_equal "ui-theme", node["data-controller"]
+    assert_equal "bar", node["data-foo"]
+    assert_equal "Toggle theme", node["aria-label"]
+    assert_equal "false", node["aria-pressed"]
+    assert_equal "tt", node["id"]
+  end
 end

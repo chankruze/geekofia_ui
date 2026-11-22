@@ -14,7 +14,7 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
     File.write(File.join(destination_root, "app/javascript/controllers/index.js"),
                %(import { application } from "controllers/application"\nimport { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"\neagerLoadControllersFrom("controllers", application)\n))
     File.write(File.join(destination_root, "app/views/layouts/application.html.erb"),
-               %(<html>\n  <head>\n    <%= stylesheet_link_tag :app %>\n  </head>\n</html>\n))
+               %(<html>\n  <head>\n    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>\n  </head>\n</html>\n))
   end
 
   test "installs once and is idempotent" do
@@ -32,4 +32,66 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
     end
     assert_file "config/initializers/geekofia_ui.rb", /GeekofiaUi.configure/
   end
+
+  test "appends the controllers line on its own line when index.js has no trailing newline" do
+    write "app/javascript/controllers/index.js", %(eagerLoadControllersFrom("controllers", application))
+    run_generator
+    assert_file "app/javascript/controllers/index.js" do |js|
+      assert_equal([ %(eagerLoadControllersFrom("controllers", application)),
+                    %(eagerLoadControllersFrom("geekofia_ui/controllers", application)) ], js.lines.map(&:chomp))
+    end
+  end
+
+  test "css import works without a trailing newline" do
+    write "app/assets/tailwind/application.css", %(@import "tailwindcss";)
+    run_generator
+    assert_equal %(@import "tailwindcss";\n@import "../builds/tailwind/geekofia_ui";\n), read("app/assets/tailwind/application.css")
+  end
+
+  test "css import works with single quotes" do
+    write "app/assets/tailwind/application.css", %(@import 'tailwindcss';\n.a {}\n)
+    run_generator
+    assert_equal %(@import 'tailwindcss';\n@import "../builds/tailwind/geekofia_ui";\n.a {}\n), read("app/assets/tailwind/application.css")
+  end
+
+  test "css import works with source() modifiers" do
+    write "app/assets/tailwind/application.css", %(@import "tailwindcss" source(none);\n)
+    run_generator
+    assert_equal %(@import "tailwindcss" source(none);\n@import "../builds/tailwind/geekofia_ui";\n), read("app/assets/tailwind/application.css")
+  end
+
+  test "css without a tailwind import is skipped with a hint" do
+    write "app/assets/tailwind/application.css", %(.a {}\n)
+    out = run_generator
+    assert_equal %(.a {}\n), read("app/assets/tailwind/application.css")
+    assert_match(/add @import "..\/builds\/tailwind\/geekofia_ui";? after @import "tailwindcss"/, out)
+  end
+
+  test "layout without stylesheet_link_tag is skipped with a hint" do
+    write "app/views/layouts/application.html.erb", "<html><head></head></html>\n"
+    out = run_generator
+    assert_equal "<html><head></head></html>\n", read("app/views/layouts/application.html.erb")
+    assert_match(/add <%= ui_head_tags %> inside <head> of app\/views\/layouts\/application.html.erb/, out)
+  end
+
+  test "missing files are skipped" do
+    FileUtils.rm_rf(File.join(destination_root, "app"))
+    out = run_generator
+    assert_match(/skip/, out)
+    assert_file "config/initializers/geekofia_ui.rb"
+  end
+
+  test "re-running reports identical and keeps a user-edited initializer" do
+    run_generator
+    path = File.join(destination_root, "config/initializers/geekofia_ui.rb")
+    File.write(path, "# mine\n")
+    out = run_generator
+    assert_equal "# mine\n", File.read(path)
+    assert_match(/identical/, out)
+  end
+
+  private
+
+  def write(path, content) = File.write(File.join(destination_root, path), content)
+  def read(path) = File.read(File.join(destination_root, path))
 end

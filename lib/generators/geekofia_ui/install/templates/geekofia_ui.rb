@@ -6,7 +6,7 @@ GeekofiaUi.configure do |c|
   #   head_tags(nonce: nil)   # the nonce keyword is optional; providers that
   #                           # don't accept it are called without it
   # c.icon_provider = :lucide
-  # c.icon_set = "lucide"   # iconify only: default set for raw String names without "set:"
+  # c.icon_set = "lucide"   # iconify only: qualifies any icon name that isn't already "set:name"
   # Semantic icon names are Symbols (ui_icon(:copy)). Strings are raw provider names.
   # Assign a new hash; the defaults are frozen, so don't mutate them in place.
   # c.icon_aliases = { copy: "clipboard" } # semantic name => provider icon name
@@ -14,9 +14,10 @@ GeekofiaUi.configure do |c|
   # c.font_awesome_style = "solid"
 
   # Fonts: :system (default), :google, :bunny, :self_hosted, or an object responding to
-  # head_tags(nonce: nil) and stacks.
+  #   head_tags(nonce: nil)
+  #   stacks   # => { sans: "<css font-family>", mono: "<css font-family>" }
   # c.font_provider = :bunny
-  # Family names may only contain letters, digits, spaces, and _ . ' - (anything else raises).
+  # Family names may only contain letters, digits, spaces, and _ . ' - (anything else raises when rendered).
   # c.font_sans = "Inter"
   # c.font_mono = "JetBrains Mono"
   # Assign a new array; the default is frozen.

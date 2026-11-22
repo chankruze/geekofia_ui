@@ -1,3 +1,7 @@
+require "importmap-rails"
+require "tailwindcss-rails"
+require "stimulus-rails"
+
 module GeekofiaUi
   class Engine < ::Rails::Engine
     engine_name "geekofia_ui"
@@ -7,7 +11,11 @@ module GeekofiaUi
     end
 
     initializer "geekofia_ui.assets" do |app|
-      app.config.assets.paths << root.join("app/javascript") if app.config.respond_to?(:assets)
+      next unless app.config.respond_to?(:assets)
+
+      app.config.assets.paths << root.join("app/javascript")
+      # Raw engine.css is a Tailwind input, not something to serve.
+      app.config.assets.excluded_paths << root.join("app/assets/tailwind") if app.config.assets.respond_to?(:excluded_paths)
     end
 
     initializer "geekofia_ui.importmap", before: "importmap" do |app|

@@ -11,6 +11,8 @@
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
   --muted: oklch(0.967 0.001 286.375);
   --muted-foreground: oklch(0.552 0.016 285.938);
   --primary: oklch(0.21 0.006 285.885);
@@ -37,6 +39,8 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
   --muted-foreground: oklch(0.705 0.015 286.067);
   --primary: oklch(0.92 0.004 286.32);
@@ -63,6 +67,8 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-primary: var(--primary);
@@ -86,12 +92,12 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--ui-font-sans);
-  --font-mono: var(--ui-font-mono);
+  --font-sans: var(--ui-font-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--ui-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
 }
 
 @layer base {
-  * { border-color: var(--border); }
+  *, ::before, ::after, ::backdrop, ::file-selector-button { border-color: var(--border); }
   html { color-scheme: light; }
   html.dark { color-scheme: dark; }
   body { background-color: var(--background); color: var(--foreground); font-family: var(--ui-font-sans, ui-sans-serif, system-ui, sans-serif); -webkit-font-smoothing: antialiased; }

@@ -1,0 +1,28 @@
+<%= ui_flash %>
+<%= ui_page_header title: "Kitchen sink", description: "Every component", badge: ui_badge("ok", variant: :success, dot: true) do %>
+  <%= ui_theme_toggle %>
+  <%= ui_button "Primary", icon: :plus %>
+<% end %>
+<%= ui_card do |c| %>
+  <%= c.header title: "Table" %>
+  <%= c.content do %>
+    <%= ui_table do |t| %>
+      <%= t.head { |r| safe_join([ r.cell("Name"), r.cell("Usage") ]) } %>
+      <%= t.body do %>
+        <%= t.row { |r| safe_join([ r.cell("/"), r.cell { ui_progress(value: 45) } ]) } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+<%= ui_alert title: "Heads up", variant: :warning do %>Something to know<% end %>
+<%= ui_code_block "ssh root@192.168.0.8 true", wrap: true %>
+<%= ui_copy_button "copy me" %>
+<%= ui_steps do |s| %>
+  <%= s.step(title: "First", done: true) %>
+  <%= s.step(title: "Second") %>
+<% end %>
+<%= ui_empty_state title: "Nothing here", icon: :server %>
+<%= form_with model: @thing, url: "/kitchen_sink", builder: GeekofiaUi::FormBuilder do |f| %>
+  <%= f.ui_text_field :name, hint: "A hint" %>
+  <%= f.ui_submit "Save" %>
+<% end %>

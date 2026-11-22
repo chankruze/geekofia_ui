@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# Usage: bin/sync-lucide /path/to/extracted/lucide-static/package
+# Copies only the icons named in GeekofiaUi::Icons::LUCIDE_NAMES, plus the license.
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+require "geekofia_ui/icons"
+
+source = ARGV.fetch(0) { abort "usage: bin/sync-lucide PATH_TO_lucide-static/package" }
+dest = File.expand_path("../lib/geekofia_ui/icons/lucide", __dir__)
+Dir.mkdir(dest) unless Dir.exist?(dest)
+
+GeekofiaUi::Icons::LUCIDE_NAMES.values.uniq.each do |name|
+  from = File.join(source, "icons", "#{name}.svg")
+  abort "missing #{from}" unless File.exist?(from)
+  File.write(File.join(dest, "#{name}.svg"), File.read(from))
+end
+File.write(File.join(dest, "LICENSE"), File.read(File.join(source, "LICENSE")))
+puts "copied #{GeekofiaUi::Icons::LUCIDE_NAMES.values.uniq.size} icons"

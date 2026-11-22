@@ -165,4 +165,26 @@ class GeekofiaUi::IconsTest < ActiveSupport::TestCase
     assert_includes svg["class"], "shrink-0"
     assert_includes svg["class"], "x"
   end
+
+  test "a style attribute extends the generated size style" do
+    [ :font_awesome, :material_symbols ].each do |name|
+      tag = name == :font_awesome ? "i" : "span"
+      [ :style, "style" ].each do |key|
+        style = fragment(provider(name).render(:copy, size: 16, css_class: nil, attrs: { key => "color: red" })).at(tag)["style"]
+        assert_includes style, "font-size: 16px", name.to_s
+        assert_includes style, "color: red", name.to_s
+      end
+    end
+    assert_includes fragment(provider(:lucide).render(:copy, size: 16, css_class: nil, attrs: { style: "color: red" })).at("svg")["style"], "color: red"
+  end
+
+  test "lucide svg loading skips files without extractable content" do
+    Dir.mktmpdir do |dir|
+      File.write(File.join(dir, "good.svg"), %(<svg a="1"><path d="M0 0"/></svg>))
+      File.write(File.join(dir, "broken.svg"), "not an svg")
+      File.write(File.join(dir, "empty.svg"), "<svg></svg>")
+      svgs = GeekofiaUi::Icons::Lucide.load_svgs(dir)
+      assert_equal [ "good" ], svgs.keys
+    end
+  end
 end

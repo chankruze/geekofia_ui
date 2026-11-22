@@ -27,10 +27,15 @@ module GeekofiaUi
         GeekofiaUi::ClassMerge.call(*required, css_class, extra)
       end
 
-      def without_class(attrs) = attrs.except(:class, "class")
-
+      # A style in attrs extends the provider's generated style instead of replacing it.
       def tag_attrs(base, required, css_class, attrs)
-        base.merge(without_class(attrs)).merge(class: merged_class(required, css_class, attrs))
+        rest = attrs.except(:class, "class")
+        if base.key?(:style)
+          extra = attrs[:style] || attrs["style"]
+          rest = rest.except(:style, "style")
+          base = base.merge(style: [ base[:style], extra ].compact_blank.join("; "))
+        end
+        base.merge(rest).merge(class: merged_class(required, css_class, attrs))
       end
 
       def script_tag(src, nonce, **extra)

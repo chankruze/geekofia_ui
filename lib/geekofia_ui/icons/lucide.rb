@@ -4,10 +4,15 @@ module GeekofiaUi
       DIR = File.expand_path("lucide", __dir__)
       NAME = /\A[a-z0-9-]+\z/
 
-      SVGS = Dir[File.join(DIR, "*.svg")].to_h do |path|
-        inner = File.read(path)[%r{<svg[^>]*>(.*)</svg>}m, 1].to_s.strip
-        [ File.basename(path, ".svg"), inner.html_safe ]
-      end.freeze
+      # Files whose inner SVG can't be extracted are skipped, so they count as missing.
+      def self.load_svgs(dir)
+        Dir[File.join(dir, "*.svg")].filter_map do |path|
+          inner = File.read(path)[%r{<svg[^>]*>(.*)</svg>}m, 1].to_s.strip
+          [ File.basename(path, ".svg"), inner.html_safe ] unless inner.empty?
+        end.to_h.freeze
+      end
+
+      SVGS = load_svgs(DIR)
 
       def render(name, size:, css_class: nil, attrs: {})
         file = provider_name(name, LUCIDE_NAMES)

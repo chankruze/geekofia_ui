@@ -1,5 +1,6 @@
 require "erb"
 require "active_support/core_ext/string/output_safety"
+require "geekofia_ui/class_merge"
 
 module GeekofiaUi
   module Icons

@@ -80,4 +80,9 @@ class GeekofiaUi::ClassMergeTest < ActiveSupport::TestCase
     assert_equal "h-auto", M.call("h-9", "h-auto")
     assert_equal "p-6 not-first:pt-0", M.call("p-6", "not-first:pt-0")
   end
+
+  test "border style does not collide with border color" do
+    assert_equal "border border-dashed border-border", M.call("border border-dashed border-border")
+    assert_equal "border-dotted", M.call("border-dashed", "border-dotted")
+  end
 end

@@ -1,4 +1,4 @@
-<li class="flex gap-4">
+<%= tag.li class: ui_classes("flex gap-4", attrs[:class]), **attrs.except(:class) do %>
   <span class="flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold <%= done ? "border-success bg-success text-success-foreground" : "border-border bg-background text-muted-foreground" %>">
     <%= done ? safe_join([ tag.span("Completed: ", class: "sr-only"), ui_icon(:check, size: 14) ]) : number %>
   </span>
@@ -6,4 +6,4 @@
     <p class="text-sm font-medium leading-6"><%= title %></p>
     <% if body.present? %><div class="space-y-2 text-sm text-muted-foreground"><%= body %></div><% end %>
   </div>
-</li>
+<% end %>

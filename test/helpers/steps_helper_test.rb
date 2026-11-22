@@ -19,4 +19,12 @@ class GeekofiaUi::StepsHelperTest < ActionView::TestCase
     assert_includes doc.css("li").first.at("span.sr-only").text, "Completed"
     assert_nil doc.css("li").last.at("span.sr-only")
   end
+
+  test "step accepts class and attrs on its li" do
+    doc = fragment(ui_steps { |s| s.step(title: "A", class: "opacity-50", id: "s1", data: { k: "v" }) })
+    li = doc.at("li#s1")
+    assert_includes li["class"], "opacity-50"
+    assert_includes li["class"], "flex"
+    assert_equal "v", li["data-k"]
+  end
 end

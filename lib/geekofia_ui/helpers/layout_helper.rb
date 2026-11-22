@@ -6,9 +6,9 @@ module GeekofiaUi
           @view = view
         end
 
-        def header(title: nil, description: nil, title_tag: :h2, &actions)
+        def header(title: nil, description: nil, title_tag: :h2, **attrs, &actions)
           @view.render(partial: "geekofia_ui/components/card_header", formats: [ :html ],
-                       locals: { title:, description:, title_tag:, actions: actions && @view.capture(&actions) })
+                       locals: { title:, description:, title_tag:, attrs:, actions: actions && @view.capture(&actions) })
         end
 
         def content(**attrs, &block)
@@ -32,14 +32,14 @@ module GeekofiaUi
         content_tag(:div, capture(CardBuilder.new(self), &block), class: css, **attrs)
       end
 
-      def ui_page_header(title:, description: nil, badge: nil, &actions)
+      def ui_page_header(title:, description: nil, badge: nil, title_tag: :h1, **attrs, &actions)
         render(partial: "geekofia_ui/components/page_header", formats: [ :html ],
-               locals: { title:, description:, badge:, actions: actions && capture(&actions) })
+               locals: { title:, description:, badge:, title_tag:, attrs:, actions: actions && capture(&actions) })
       end
 
-      def ui_empty_state(title:, description: nil, icon: nil, title_tag: :h3, &actions)
+      def ui_empty_state(title:, description: nil, icon: nil, title_tag: :h3, **attrs, &actions)
         render(partial: "geekofia_ui/components/empty_state", formats: [ :html ],
-               locals: { title:, description:, icon:, title_tag:, actions: actions && capture(&actions) })
+               locals: { title:, description:, icon:, title_tag:, attrs:, actions: actions && capture(&actions) })
       end
     end
   end

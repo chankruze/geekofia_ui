@@ -23,7 +23,7 @@ module GeekofiaUi
       [ :bg_clip, /\Abg-clip-/ ], [ :bg_origin, /\Abg-origin-/ ],
       [ :bg, /\Abg-/ ],
       *SIDES.map { |side| [ :"border_width_#{side}", /\Aborder-#{side}(-\d+)?\z/ ] },
-      [ :border_width, /\Aborder(-\d+)?\z/ ], [ :border_color, /\Aborder-/ ],
+      [ :border_width, /\Aborder(-\d+)?\z/ ], [ :border_style, /\Aborder-(solid|dashed|dotted|double|hidden|none)\z/ ], [ :border_color, /\Aborder-/ ],
       *CORNERS.map { |corner| [ :"rounded_#{corner}", /\Arounded-#{corner}(-|\z)/ ] },
       [ :rounded, /\Arounded(-|\z)/ ],
       [ :gap_x, /\Agap-x-/ ], [ :gap_y, /\Agap-y-/ ], [ :gap, /\Agap-/ ],

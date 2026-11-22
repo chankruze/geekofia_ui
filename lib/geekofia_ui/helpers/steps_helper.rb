@@ -7,10 +7,10 @@ module GeekofiaUi
           @number = 0
         end
 
-        def step(title:, done: false, &block)
+        def step(title:, done: false, **attrs, &block)
           @number += 1
           @view.render(partial: "geekofia_ui/components/step", formats: [ :html ],
-                       locals: { number: @number, title:, done:, body: block && @view.capture(&block) })
+                       locals: { number: @number, title:, done:, attrs:, body: block && @view.capture(&block) })
         end
       end
 

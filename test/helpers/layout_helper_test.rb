@@ -95,4 +95,23 @@ class GeekofiaUi::LayoutHelperTest < ActionView::TestCase
       assert_equal "ui_card #{name} needs a block", error.message
     end
   end
+
+  test "page header and empty state accept class, attrs and title_tag" do
+    node = fragment(ui_page_header(title: "T", title_tag: :h2, class: "mb-0", id: "ph", data: { x: "1" })).at("#ph")
+    assert_includes node["class"], "mb-0"
+    assert_includes node["class"], "flex"
+    assert_equal "1", node["data-x"]
+    assert node.at("h2")
+    assert_nil node.at("h1")
+    es = fragment(ui_empty_state(title: "N", class: "py-2", id: "es")).at("#es")
+    assert_includes es["class"], "border-dashed"
+    assert_includes es["class"], "py-2"
+  end
+
+  test "card header accepts class and attrs" do
+    html = ui_card { |c| c.header(title: "H", class: "bg-muted", id: "ch") }
+    node = fragment(html).at("#ch")
+    assert_includes node["class"], "bg-muted"
+    assert_includes node["class"], "p-6"
+  end
 end

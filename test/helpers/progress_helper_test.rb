@@ -32,4 +32,11 @@ class GeekofiaUi::ProgressHelperTest < ActionView::TestCase
     assert_equal "100", zero["aria-valuemax"]
     assert_equal "3 of 10", fragment(ui_progress(value: 3, max: 10, "aria-valuetext": "3 of 10")).at("[role=progressbar]")["aria-valuetext"]
   end
+
+  test "nested aria overrides do not duplicate defaults" do
+    html = ui_progress(value: 5, aria: { valuetext: "5 of 100 GB" })
+    assert_equal 1, html.scan("aria-valuetext").size
+    assert_equal "5 of 100 GB", fragment(html).at("[role=progressbar]")["aria-valuetext"]
+    assert_equal 1, ui_progress(value: 5, "aria-valuetext": "x").scan("aria-valuetext").size
+  end
 end

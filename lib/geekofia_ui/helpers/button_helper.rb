@@ -28,7 +28,7 @@ module GeekofiaUi
           href = "#{href}#{href.include?("?") ? "&" : "?"}#{params.to_query}" if params.present?
           link_to(body, href, class: classes, **attrs)
         else
-          button_to(href, method: verb.to_sym, class: classes, form:, form_class:, params:, **attrs) { body }
+          button_to(href, method: verb.to_sym, class: classes, form: { class: form_class }.merge(form), params:, **attrs) { body }
         end
       end
     end

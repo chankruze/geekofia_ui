@@ -82,4 +82,11 @@ class GeekofiaUi::ButtonHelperTest < ActionView::TestCase
     assert fragment(ui_button("Go", href: "/x", icon: :copy)).at("a svg")
     assert_equal "submit", fragment(ui_button("Go", type: "submit")).at("button")["type"]
   end
+
+  test "caller form class wins and no form_class attribute leaks" do
+    form = fragment(ui_button("Run", href: "/x", method: :post, form: { class: "mine" })).at("form")
+    assert_equal "mine", form["class"]
+    assert_nil form.at("button")["form_class"]
+    assert_nil form.at("button")["form-class"]
+  end
 end

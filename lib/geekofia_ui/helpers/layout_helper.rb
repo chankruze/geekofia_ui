@@ -7,16 +7,20 @@ module GeekofiaUi
         end
 
         def header(title: nil, description: nil, title_tag: :h2, &actions)
-          @view.render("geekofia_ui/components/card_header", title:, description:, title_tag:,
-                                                            actions: actions && @view.capture(&actions))
+          @view.render(partial: "geekofia_ui/components/card_header", formats: [ :html ],
+                       locals: { title:, description:, title_tag:, actions: actions && @view.capture(&actions) })
         end
 
         def content(**attrs, &block)
+          raise ArgumentError, "ui_card content needs a block" unless block
+
           @view.content_tag(:div, @view.capture(&block),
                             class: GeekofiaUi::ClassMerge.call("p-6 not-first:pt-0", attrs.delete(:class)), **attrs)
         end
 
         def footer(**attrs, &block)
+          raise ArgumentError, "ui_card footer needs a block" unless block
+
           @view.content_tag(:div, @view.capture(&block),
                             class: GeekofiaUi::ClassMerge.call("flex items-center gap-2 border-t border-border px-6 py-4",
                                                                attrs.delete(:class)), **attrs)
@@ -29,11 +33,13 @@ module GeekofiaUi
       end
 
       def ui_page_header(title:, description: nil, badge: nil, &actions)
-        render("geekofia_ui/components/page_header", title:, description:, badge:, actions: actions && capture(&actions))
+        render(partial: "geekofia_ui/components/page_header", formats: [ :html ],
+               locals: { title:, description:, badge:, actions: actions && capture(&actions) })
       end
 
-      def ui_empty_state(title:, description: nil, icon: nil, &actions)
-        render("geekofia_ui/components/empty_state", title:, description:, icon:, actions: actions && capture(&actions))
+      def ui_empty_state(title:, description: nil, icon: nil, title_tag: :h3, &actions)
+        render(partial: "geekofia_ui/components/empty_state", formats: [ :html ],
+               locals: { title:, description:, icon:, title_tag:, actions: actions && capture(&actions) })
       end
     end
   end

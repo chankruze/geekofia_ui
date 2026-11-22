@@ -3,8 +3,8 @@ module GeekofiaUi
     module TableHelper
       class RowBuilder
         CELL = {
-          th: "h-10 whitespace-nowrap px-3 text-left align-middle text-xs font-medium uppercase tracking-wide text-muted-foreground",
-          td: "px-3 py-3 align-middle"
+          th: "h-10 whitespace-nowrap px-3 first:pl-6 last:pr-6 text-left align-middle text-xs font-medium uppercase tracking-wide text-muted-foreground",
+          td: "px-3 py-3 align-middle first:pl-6 last:pr-6"
         }.freeze
 
         def initialize(view, tag)
@@ -13,8 +13,14 @@ module GeekofiaUi
         end
 
         def cell(content = nil, **attrs, &block)
+          attrs[:scope] ||= "col" if @tag == :th
           @view.content_tag(@tag, block ? @view.capture(&block) : content,
                             class: GeekofiaUi::ClassMerge.call(CELL.fetch(@tag), attrs.delete(:class)), **attrs)
+        end
+
+        def header_cell(content = nil, **attrs, &block)
+          @view.content_tag(:th, block ? @view.capture(&block) : content, scope: "row", **attrs,
+                            class: GeekofiaUi::ClassMerge.call(CELL.fetch(:td), "font-medium", attrs.delete(:class)))
         end
       end
 
@@ -38,8 +44,9 @@ module GeekofiaUi
       end
 
       def ui_table(**attrs, &block)
-        render("geekofia_ui/components/table", body: capture(TableBuilder.new(self), &block),
-                                              css: ui_classes("w-full caption-bottom text-sm", attrs.delete(:class)), attrs:)
+        render(partial: "geekofia_ui/components/table", formats: [ :html ],
+               locals: { body: capture(TableBuilder.new(self), &block),
+                         css: ui_classes("w-full caption-bottom text-sm", attrs.delete(:class)), attrs: })
       end
     end
   end

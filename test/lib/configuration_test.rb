@@ -17,4 +17,20 @@ class GeekofiaUi::ConfigurationTest < ActiveSupport::TestCase
     GeekofiaUi.reset_config!
     assert_equal :lucide, GeekofiaUi.config.icon_provider
   end
+
+  test "writers clear the memoized providers" do
+    c = GeekofiaUi.config
+    c.instance_variable_set(:@icons, :sentinel)
+    c.icon_set = "other"
+    assert_nil c.instance_variable_get(:@icons)
+    c.instance_variable_set(:@fonts, :sentinel)
+    c.font_weights = [ 400 ]
+    assert_nil c.instance_variable_get(:@fonts)
+  end
+
+  test "default collections are frozen" do
+    c = GeekofiaUi::Configuration.new
+    assert_predicate c.icon_aliases, :frozen?
+    assert_predicate c.font_weights, :frozen?
+  end
 end

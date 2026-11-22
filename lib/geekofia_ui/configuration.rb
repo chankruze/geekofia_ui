@@ -6,13 +6,13 @@ module GeekofiaUi
     def initialize
       @icon_provider = :lucide
       @icon_set = "lucide"
-      @icon_aliases = {}
+      @icon_aliases = {}.freeze
       @font_awesome_kit = nil
       @font_awesome_style = "solid"
       @font_provider = :system
       @font_sans = nil
       @font_mono = nil
-      @font_weights = [ 400, 500, 600, 700 ]
+      @font_weights = [ 400, 500, 600, 700 ].freeze
     end
 
     %i[icon_provider icon_set icon_aliases font_awesome_kit font_awesome_style].each do |name|

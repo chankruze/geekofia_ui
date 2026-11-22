@@ -19,4 +19,10 @@ class GeekofiaUi::IconHelperTest < ActionView::TestCase
       assert_equal 1, html.scan("aria-label").size
     end
   end
+
+  test "size is coerced to an integer and invalid sizes raise" do
+    assert_equal "20", fragment(ui_icon(:copy, size: "20")).at("svg")["width"]
+    assert_raises(ArgumentError) { ui_icon(:copy, size: "big") }
+    assert_raises(TypeError) { ui_icon(:copy, size: nil) }
+  end
 end

@@ -2,6 +2,7 @@ module GeekofiaUi
   module Helpers
     module IconHelper
       def ui_icon(name, size: 16, aria_label: nil, **attrs)
+        size = Integer(size)
         css = attrs.delete(:class)
         a = attrs.dup
         nested = a[:aria].is_a?(Hash) ? a[:aria].dup : nil

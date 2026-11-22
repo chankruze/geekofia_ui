@@ -1,3 +1,4 @@
+require "cgi"
 require "active_support/core_ext/string/output_safety"
 
 module GeekofiaUi
@@ -27,18 +28,31 @@ module GeekofiaUi
 
       private
 
+      FAMILY_PATTERN = /\A[\p{L}\p{N} _.'-]+\z/
+
       def stack(family, fallback)
-        family.to_s.strip.empty? ? fallback : %("#{family.to_s.delete('"<>')}", #{fallback})
+        name = clean_family(family)
+        name ? %("#{name}", #{fallback}) : fallback
       end
 
-      def families = [ @config.font_sans, @config.font_mono ].map(&:to_s).map(&:strip).reject(&:empty?).uniq
+      # Strips a family and rejects anything that could break out of CSS or a URL.
+      def clean_family(family)
+        name = family.to_s.strip
+        return nil if name.empty?
+        raise ArgumentError, "invalid font family #{name.inspect}; use letters, numbers, spaces, _ . ' and -" unless FAMILY_PATTERN.match?(name)
+        name
+      end
+
+      def families = [ @config.font_sans, @config.font_mono ].filter_map { |f| clean_family(f) }.uniq(&:downcase)
+
+      def weights = Array(@config.font_weights).map(&:to_i).select(&:positive?).uniq.sort
 
       def link(href, nonce)
         ActionController::Base.helpers.tag.link(rel: "stylesheet", href: href, nonce: nonce)
       end
 
       def preconnect(href, nonce, crossorigin: false)
-        ActionController::Base.helpers.tag.link(rel: "preconnect", href: href, crossorigin: (true if crossorigin), nonce: nonce)
+        ActionController::Base.helpers.tag.link(rel: "preconnect", href: href, crossorigin: ("anonymous" if crossorigin), nonce: nonce)
       end
     end
 
@@ -52,7 +66,8 @@ module GeekofiaUi
     class Google < Base
       def head_tags(nonce: nil)
         return "".html_safe if families.empty?
-        query = families.map { |f| "family=#{f.tr(" ", "+")}:wght@#{@config.font_weights.join(";")}" }.join("&")
+        suffix = weights.empty? ? "" : ":wght@#{weights.join(";")}"
+        query = families.map { |f| "family=#{CGI.escape(f)}#{suffix}" }.join("&")
         ActionController::Base.helpers.safe_join([
           preconnect("https://fonts.googleapis.com", nonce),
           preconnect("https://fonts.gstatic.com", nonce, crossorigin: true),
@@ -64,7 +79,8 @@ module GeekofiaUi
     class Bunny < Base
       def head_tags(nonce: nil)
         return "".html_safe if families.empty?
-        query = families.map { |f| "#{f.downcase.tr(" ", "-")}:#{@config.font_weights.join(",")}" }.join("|")
+        suffix = weights.empty? ? "" : ":#{weights.join(",")}"
+        query = families.map { |f| "#{f.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-+|-+\z/, "")}#{suffix}" }.join("|")
         ActionController::Base.helpers.safe_join([
           preconnect("https://fonts.bunny.net", nonce),
           link("https://fonts.bunny.net/css?family=#{query}&display=swap", nonce)

@@ -1,8 +1,8 @@
 <%= content_tag :div, class: css, **attrs do %>
-  <%= ui_button variant: :ghost, size: :icon,
+  <%= ui_button variant: :ghost, size: :icon, id: trigger_id,
         data: { ui_dropdown_target: "trigger", action: "click->ui-dropdown#toggle keydown->ui-dropdown#triggerKeydown" },
-        aria: { label: label, haspopup: "menu", expanded: "false" } do %><%= ui_icon icon %><% end %>
-  <%= content_tag :div, items, role: "menu", hidden: true, aria: { label: label },
+        aria: { label: label, haspopup: "menu", expanded: "false", controls: menu_id } do %><%= ui_icon icon %><% end %>
+  <%= content_tag :div, items, id: menu_id, role: "menu", hidden: true, aria: { labelledby: trigger_id },
         data: { ui_dropdown_target: "menu", action: "keydown->ui-dropdown#menuKeydown" },
         class: "absolute #{align_class} z-50 mt-1 min-w-44 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md" %>
 <% end %>

@@ -24,9 +24,14 @@ module GeekofiaUi
 
       def ui_dropdown_menu(label: "More actions", icon: :more, align: :end, **attrs, &block)
         align_class = DROPDOWN_ALIGNMENTS.fetch(ui_option!(:align, align, DROPDOWN_ALIGNMENTS.keys))
-        data = { controller: "ui-dropdown" }.merge(attrs.delete(:data) || {})
+        caller_data = attrs.delete(:data) || {}
+        data = caller_data.merge(
+          controller: [ "ui-dropdown", caller_data[:controller] ].compact.join(" "),
+          action: [ "turbo:before-cache@document->ui-dropdown#close", caller_data[:action] ].compact.join(" ")
+        )
+        menu_id = "ui-dropdown-#{SecureRandom.hex(4)}"
         render(partial: "geekofia_ui/components/dropdown_menu", formats: [ :html ],
-               locals: { label:, icon:, align_class:, items: capture(MenuBuilder.new(self), &block),
+               locals: { label:, icon:, align_class:, menu_id:, trigger_id: "#{menu_id}-trigger", items: capture(MenuBuilder.new(self), &block),
                          css: ui_classes("relative inline-block text-left", attrs.delete(:class)),
                          attrs: attrs.merge(data:) })
       end
@@ -38,9 +43,12 @@ module GeekofiaUi
                              DROPDOWN_ITEM_VARIANTS.fetch(ui_option!(:variant, variant, DROPDOWN_ITEM_VARIANTS.keys)),
                              attrs.delete(:class))
         body = safe_join([ (ui_icon(icon) if icon), tag.span(label) ].compact)
-        item_attrs = { role: "menuitem", tabindex: "-1", class: classes, data: { action: "ui-dropdown#close" } }
+        caller_data = attrs.delete(:data) || {}
+        data = caller_data.merge(action: [ "ui-dropdown#select", caller_data[:action] ].compact.join(" "))
+        item_attrs = { role: "menuitem", tabindex: "-1", class: classes, data: }
         verb = method&.to_s&.downcase
         if verb.nil? || verb == "get"
+          href = "#{href}#{href.include?("?") ? "&" : "?"}#{params.to_query}" if params.present?
           link_to(body, href, **item_attrs, **attrs)
         else
           button_to(href, method: verb.to_sym, params: params || {},

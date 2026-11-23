@@ -36,10 +36,15 @@ export default class extends Controller {
 
   close(options = {}) {
     if (!this.isOpen) return
+    const restore = options.restoreFocus === true || this.menuTarget.contains(document.activeElement)
     this.menuTarget.hidden = true
     this.triggerTarget.setAttribute("aria-expanded", "false")
     document.removeEventListener("click", this.outside, true)
-    if (options.restoreFocus === true) this.triggerTarget.focus()
+    if (restore) this.triggerTarget.focus()
+  }
+
+  select() {
+    this.close({ restoreFocus: true })
   }
 
   triggerKeydown(event) {
@@ -60,7 +65,7 @@ export default class extends Controller {
       case "ArrowUp": event.preventDefault(); items[(index - 1 + items.length) % items.length]?.focus(); break
       case "Home": event.preventDefault(); items[0]?.focus(); break
       case "End": event.preventDefault(); items[items.length - 1]?.focus(); break
-      case "Escape": event.preventDefault(); this.close({ restoreFocus: true }); break
+      case "Escape": event.preventDefault(); event.stopPropagation(); this.close({ restoreFocus: true }); break
       case "Tab": this.close(); break
     }
   }

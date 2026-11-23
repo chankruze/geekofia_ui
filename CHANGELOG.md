@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Re-release of the 0.1.1 changes. The `v0.1.1` git tag points at an incomplete commit (no version bump, changelog or README fixes); use `v0.1.2` instead.
+
 ## 0.1.1
 
 - Theme toggle merges caller `class:`, `data:` and `aria:` instead of overriding them.

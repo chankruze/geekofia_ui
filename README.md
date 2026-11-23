@@ -8,7 +8,7 @@ a toggle, and pluggable icon and font providers.
 
 ```ruby
 # Gemfile
-gem "geekofia_ui", github: "chankruze/geekofia_ui", tag: "v0.1.1"
+gem "geekofia_ui", github: "chankruze/geekofia_ui", tag: "v0.1.2"
 ```
 
 ```sh

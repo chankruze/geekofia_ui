@@ -16,5 +16,6 @@ class KitchenSinkTest < ActionDispatch::IntegrationTest
     assert_select "h3", "Nothing here"
     assert_select "pre code"
     assert_select "h2", "Table"
+    assert_select "dialog[data-controller=ui-confirm]"
   end
 end

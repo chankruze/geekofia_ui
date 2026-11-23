@@ -1,0 +1,16 @@
+<%= content_tag :dialog,
+      aria: { labelledby: "ui-confirm-title", describedby: "ui-confirm-message" },
+      data: { controller: "ui-confirm", action: "click->ui-confirm#backdrop close->ui-confirm#closed",
+              ui_confirm_default_class_value: default_class, ui_confirm_destructive_class_value: destructive_class },
+      class: "m-auto w-[min(28rem,calc(100%-2rem))] rounded-xl border border-border bg-card p-0 text-card-foreground shadow-lg backdrop:bg-black/50" do %>
+  <form method="dialog" class="space-y-4 p-6">
+    <div class="space-y-2">
+      <h2 id="ui-confirm-title" data-ui-confirm-target="title" class="text-lg font-semibold">Are you sure?</h2>
+      <p id="ui-confirm-message" data-ui-confirm-target="message" class="text-sm text-muted-foreground"></p>
+    </div>
+    <div class="flex justify-end gap-2">
+      <%= ui_button "Cancel", type: "submit", value: "cancel", variant: :outline, autofocus: true, data: { ui_confirm_target: "cancel" } %>
+      <%= ui_button "Confirm", type: "submit", value: "confirm", data: { ui_confirm_target: "confirm" } %>
+    </div>
+  </form>
+<% end %>

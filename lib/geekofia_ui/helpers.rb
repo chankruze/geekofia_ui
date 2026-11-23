@@ -9,6 +9,7 @@ require "geekofia_ui/helpers/feedback_helper"
 require "geekofia_ui/helpers/copy_helper"
 require "geekofia_ui/helpers/steps_helper"
 require "geekofia_ui/helpers/theme_helper"
+require "geekofia_ui/helpers/confirm_helper"
 require "geekofia_ui/helpers/dropdown_helper"
 
 module GeekofiaUi
@@ -25,6 +26,7 @@ module GeekofiaUi
     include CopyHelper
     include StepsHelper
     include ThemeHelper
+    include ConfirmHelper
     include DropdownHelper
   end
 end

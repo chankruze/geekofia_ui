@@ -55,16 +55,6 @@ module GeekofiaUi
                     form: { class: "contents", data: ui_confirm_data(confirm) }, **item_attrs, **attrs) { body }
         end
       end
-
-      def ui_confirm_data(confirm)
-        return {} if confirm.blank?
-        confirm = { message: confirm } if confirm.is_a?(String)
-        data = { turbo_confirm: confirm.fetch(:message) { raise ArgumentError, "confirm: needs a message" } }
-        data[:confirm_title] = confirm[:title] if confirm[:title]
-        data[:confirm_button] = confirm[:button] if confirm[:button]
-        data[:confirm_variant] = ui_option!(:confirm_variant, confirm[:variant], %i[default destructive]) if confirm[:variant]
-        data
-      end
     end
   end
 end

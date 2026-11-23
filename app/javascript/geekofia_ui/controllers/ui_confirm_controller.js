@@ -8,6 +8,8 @@ export default class extends Controller {
   static values = { defaultClass: String, destructiveClass: String }
 
   connect() {
+    this.trackLink = (event) => { this.lastLink = event.target.closest?.("a[data-turbo-confirm]") || null }
+    document.addEventListener("click", this.trackLink, true)
     this.forms = Turbo.config?.forms
     if (!this.forms) return
     this.previous = this.forms.confirm
@@ -15,12 +17,16 @@ export default class extends Controller {
   }
 
   disconnect() {
+    document.removeEventListener("click", this.trackLink, true)
     this.finish(false)
     if (this.forms) this.forms.confirm = this.previous
   }
 
   ask(message, element, submitter) {
-    const read = (key) => submitter?.dataset?.[key] || element?.dataset?.[key]
+    // Turbo submits confirm links through a generated form without a submitter, so fall back to the clicked link.
+    const link = this.lastLink?.isConnected ? this.lastLink : null
+    this.lastLink = null
+    const read = (key) => submitter?.dataset?.[key] || element?.dataset?.[key] || link?.dataset?.[key]
     this.titleTarget.textContent = read("confirmTitle") || "Are you sure?"
     this.messageTarget.textContent = message
     this.confirmTarget.textContent = read("confirmButton") || "Confirm"

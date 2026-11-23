@@ -44,6 +44,14 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
     assert_match(/add <%= ui_confirm_dialog %> before <\/body> of app\/views\/layouts\/application.html.erb/, out)
   end
 
+  test "confirm dialog goes inside a one-line body before its closing tag" do
+    write "app/views/layouts/application.html.erb", "<html><body><%= yield %></body></html>\n"
+    2.times { run_generator }
+    layout = read("app/views/layouts/application.html.erb")
+    assert_equal 1, layout.scan("ui_confirm_dialog").size
+    assert_equal "<html><body><%= yield %><%= ui_confirm_dialog %></body></html>\n", layout
+  end
+
   test "confirm dialog goes before the last closing body tag" do
     write "app/views/layouts/application.html.erb", "<!-- </body> -->\n<body>\n</body>\n"
     run_generator

@@ -3,6 +3,7 @@ require "test_helper"
 class GeekofiaUi::ConfirmHelperTest < ActionView::TestCase
   test "dialog markup" do
     dialog = fragment(ui_confirm_dialog).at("dialog[data-controller=ui-confirm]")
+    assert_equal "alertdialog", dialog["role"]
     assert_equal "ui-confirm-title", dialog["aria-labelledby"]
     assert_equal "ui-confirm-message", dialog["aria-describedby"]
     assert_includes dialog["data-ui-confirm-destructive-class-value"], "bg-destructive"

@@ -51,7 +51,11 @@ module GeekofiaUi
         index = content.rindex("</body>")
         return say_status(:skip, "add <%= ui_confirm_dialog %> before </body> of #{LAYOUT}", :yellow) unless index
         line_start = content.rindex("\n", index)&.succ || 0
-        inject_into_file LAYOUT, "    <%= ui_confirm_dialog %>\n", after: /\A#{Regexp.escape(content[0...line_start])}/
+        if content[line_start...index].strip.empty?
+          inject_into_file LAYOUT, "    <%= ui_confirm_dialog %>\n", after: /\A#{Regexp.escape(content[0...line_start])}/
+        else
+          inject_into_file LAYOUT, "<%= ui_confirm_dialog %>", after: /\A#{Regexp.escape(content[0...index])}/
+        end
       end
 
       private

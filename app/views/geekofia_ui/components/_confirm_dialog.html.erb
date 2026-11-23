@@ -1,4 +1,5 @@
 <%= content_tag :dialog,
+      role: "alertdialog",
       aria: { labelledby: "ui-confirm-title", describedby: "ui-confirm-message" },
       data: { controller: "ui-confirm", action: "click->ui-confirm#backdrop close->ui-confirm#closed",
               ui_confirm_default_class_value: default_class, ui_confirm_destructive_class_value: destructive_class },

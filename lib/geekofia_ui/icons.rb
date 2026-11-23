@@ -5,14 +5,14 @@ require "geekofia_ui/class_merge"
 module GeekofiaUi
   module Icons
     SEMANTIC = %i[copy check sun moon monitor info alert_triangle alert_circle check_circle x plus server
-                  terminal refresh pencil trash external_link help arrow_left log_out hard_drive key play plug].freeze
+                  terminal refresh pencil trash external_link help arrow_left log_out hard_drive key play plug more].freeze
 
     LUCIDE_NAMES = {
       copy: "copy", check: "check", sun: "sun", moon: "moon", monitor: "monitor", info: "info",
       alert_triangle: "triangle-alert", alert_circle: "circle-alert", check_circle: "circle-check", x: "x",
       plus: "plus", server: "server", terminal: "terminal", refresh: "refresh-cw", pencil: "pencil",
       trash: "trash-2", external_link: "external-link", help: "circle-help", arrow_left: "arrow-left",
-      log_out: "log-out", hard_drive: "hard-drive", key: "key-round", play: "play", plug: "plug"
+      log_out: "log-out", hard_drive: "hard-drive", key: "key-round", play: "play", plug: "plug", more: "ellipsis"
     }.freeze
 
     BUILT_IN = { lucide: "Lucide", iconify: "Iconify", font_awesome: "FontAwesome", material_symbols: "MaterialSymbols" }.freeze

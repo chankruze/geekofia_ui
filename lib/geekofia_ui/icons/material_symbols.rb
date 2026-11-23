@@ -7,7 +7,7 @@ module GeekofiaUi
         info: "info", alert_triangle: "warning", alert_circle: "error", check_circle: "check_circle", x: "close",
         plus: "add", server: "dns", terminal: "terminal", refresh: "refresh", pencil: "edit", trash: "delete",
         external_link: "open_in_new", help: "help", arrow_left: "arrow_back", log_out: "logout",
-        hard_drive: "hard_drive", key: "key", play: "play_arrow", plug: "power"
+        hard_drive: "hard_drive", key: "key", play: "play_arrow", plug: "power", more: "more_horiz"
       }.freeze
 
       def render(name, size:, css_class: nil, attrs: {})

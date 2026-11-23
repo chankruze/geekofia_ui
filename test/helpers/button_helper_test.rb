@@ -89,4 +89,19 @@ class GeekofiaUi::ButtonHelperTest < ActionView::TestCase
     assert_nil form.at("button")["form_class"]
     assert_nil form.at("button")["form-class"]
   end
+
+  test "confirm writes turbo confirm data on button_to forms and plain buttons" do
+    form = fragment(ui_button("Forget", href: "/f", method: :post,
+                              confirm: { message: "Sure?", title: "Forget?", button: "Forget key", variant: :destructive })).at("form")
+    assert_equal "Sure?", form["data-turbo-confirm"]
+    assert_equal "Forget?", form["data-confirm-title"]
+    assert_equal "Forget key", form["data-confirm-button"]
+    assert_equal "destructive", form["data-confirm-variant"]
+    kept = fragment(ui_button("X", href: "/x", method: :delete, form: { data: { foo: "1" } }, confirm: "Sure?")).at("form")
+    assert_equal "1", kept["data-foo"]
+    assert_equal "Sure?", kept["data-turbo-confirm"]
+    assert_equal "Sure?", fragment(ui_button("Y", confirm: "Sure?")).at("button")["data-turbo-confirm"]
+    assert_equal "Sure?", fragment(ui_button("L", href: "/l", confirm: "Sure?")).at("a")["data-turbo-confirm"]
+    assert_raises(ArgumentError) { ui_button("Z", href: "/z", method: :post, confirm: { title: "no message" }) }
+  end
 end

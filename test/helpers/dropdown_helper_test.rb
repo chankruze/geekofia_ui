@@ -105,4 +105,14 @@ class GeekofiaUi::DropdownHelperTest < ActionView::TestCase
     other = fragment(menu_html(icon: :plus)).at("button svg").to_html
     assert_not_equal default, other
   end
+
+  test "string-keyed data merges with symbol keys" do
+    html = ui_dropdown_menu(data: { "controller" => "other", "action" => "click->x#y" }) do |m|
+      m.item("a", href: "/a", data: { "action" => "click->z#w" })
+    end
+    root = fragment(html).at("[data-controller~=ui-dropdown]")
+    assert_equal "ui-dropdown other", root["data-controller"]
+    assert_includes root["data-action"], "click->x#y"
+    assert_equal "ui-dropdown#select click->z#w", root.at("a")["data-action"]
+  end
 end

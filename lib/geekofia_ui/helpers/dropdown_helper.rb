@@ -24,7 +24,7 @@ module GeekofiaUi
 
       def ui_dropdown_menu(label: "More actions", icon: :more, align: :end, **attrs, &block)
         align_class = DROPDOWN_ALIGNMENTS.fetch(ui_option!(:align, align, DROPDOWN_ALIGNMENTS.keys))
-        caller_data = attrs.delete(:data) || {}
+        caller_data = (attrs.delete(:data) || {}).to_h.symbolize_keys
         data = caller_data.merge(
           controller: [ "ui-dropdown", caller_data[:controller] ].compact.join(" "),
           action: [ "turbo:before-cache@document->ui-dropdown#close", caller_data[:action] ].compact.join(" ")
@@ -43,7 +43,7 @@ module GeekofiaUi
                              DROPDOWN_ITEM_VARIANTS.fetch(ui_option!(:variant, variant, DROPDOWN_ITEM_VARIANTS.keys)),
                              attrs.delete(:class))
         body = safe_join([ (ui_icon(icon) if icon), tag.span(label) ].compact)
-        caller_data = attrs.delete(:data) || {}
+        caller_data = (attrs.delete(:data) || {}).to_h.symbolize_keys
         data = caller_data.merge(action: [ "ui-dropdown#select", caller_data[:action] ].compact.join(" "))
         item_attrs = { role: "menuitem", tabindex: "-1", class: classes, data: }
         verb = method&.to_s&.downcase

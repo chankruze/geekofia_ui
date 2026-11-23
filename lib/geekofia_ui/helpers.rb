@@ -11,6 +11,7 @@ require "geekofia_ui/helpers/steps_helper"
 require "geekofia_ui/helpers/theme_helper"
 require "geekofia_ui/helpers/confirm_helper"
 require "geekofia_ui/helpers/dropdown_helper"
+require "geekofia_ui/helpers/tabs_helper"
 
 module GeekofiaUi
   # Mixed into ActionView::Base by the engine.
@@ -28,5 +29,6 @@ module GeekofiaUi
     include ThemeHelper
     include ConfirmHelper
     include DropdownHelper
+    include TabsHelper
   end
 end

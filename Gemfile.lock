@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    geekofia_ui (0.2.0)
+    geekofia_ui (0.3.0)
       importmap-rails (~> 2.0)
       rails (>= 8.0, < 9)
       stimulus-rails (~> 1.3)

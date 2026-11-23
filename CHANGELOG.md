@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- New `ui_tabs` (`t.tab`): link-based tab bar with `aria-current="page"`, exact or prefix matching, optional badge and status dot. No JavaScript.
+
 ## 0.2.0
 
 - New `ui_dropdown_menu` (`m.item`, `m.separator`): accessible menu button with keyboard navigation, `align:`, item `method:`, `params:`, `icon:` and `variant: :destructive`. Needs JavaScript.

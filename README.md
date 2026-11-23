@@ -54,6 +54,7 @@ and any icon/font provider tags. It honors the CSP nonce when one is available.
 | `ui_steps` | see below |
 | `ui_theme_toggle` | cycles light, dark, then system |
 | `ui_dropdown_menu` | see [Dropdown menu](#dropdown-menu) |
+| `ui_tabs` | see [Tabs](#tabs) |
 | `ui_confirm_dialog` | see [Confirm dialog](#confirm-dialog); render once before `</body>` |
 | `ui_icon` | `ui_icon(:copy, size: 16, aria_label: nil)`; `size` goes through `Integer()` and raises if invalid |
 
@@ -126,6 +127,23 @@ Variants and sizes are validated and raise `ArgumentError` listing the allowed v
 - Keyboard: Enter, Space or Down on the trigger opens the menu (Up opens on the last item). Up, Down, Home and End move between items.
   Escape closes and returns focus to the trigger. Tab and an outside click close it. Activating an item closes the menu and returns focus to the trigger.
 - It needs JavaScript: the menu is `hidden` until the Stimulus `ui-dropdown` controller connects.
+
+### Tabs
+
+```erb
+<%= ui_tabs label: "Server sections" do |t| %>
+  <%= t.tab "Overview", href: "/servers/1" %>
+  <%= t.tab "Packages", href: "/servers/1/packages", match: :prefix, badge: 3, badge_variant: :destructive %>
+  <%= t.tab "Storage", href: "/servers/1/storage", dot: :warning, dot_label: "health warning" %>
+<% end %>
+```
+
+- `ui_tabs label:` is the nav landmark name (required). `class:` and HTML attributes go on the `<nav>`.
+- `t.tab label, href:` takes `active:` (true or false overrides the computed state), `match: :exact | :prefix` (default `:exact`;
+  `:prefix` also matches sub-paths), `badge:` (nil and 0 render nothing), `badge_variant:` (any `ui_badge` variant, default `:secondary`),
+  `dot: :success | :warning | :destructive`, `dot_label:` (screen-reader text, default `"attention"`) and extra HTML attributes.
+- The active tab gets `aria-current="page"`; inactive tabs have no `aria-current` attribute. The bar scrolls horizontally when it overflows.
+- No JavaScript: tabs are plain links.
 
 ### Confirm dialog
 

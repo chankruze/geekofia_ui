@@ -8,12 +8,12 @@ a toggle, and pluggable icon and font providers.
 
 ```ruby
 # Gemfile
-gem "geekofia_ui", github: "chankruze/geekofia_ui", tag: "v0.1.2"
+gem "geekofia_ui", github: "chankruze/geekofia_ui", tag: "v0.2.0"
 ```
 
 ```sh
 bundle install
-bin/rails g geekofia_ui:install   # Tailwind import, Stimulus registration, initializer, ui_head_tags
+bin/rails g geekofia_ui:install   # Tailwind import, Stimulus registration, initializer, ui_head_tags, ui_confirm_dialog
 bin/rails tailwindcss:build
 ```
 
@@ -53,6 +53,8 @@ and any icon/font provider tags. It honors the CSP nonce when one is available.
 | `ui_code_block` | `ui_code_block(cmd, wrap: true, copy: true, copy_label: "Copy", language: :sh)` |
 | `ui_steps` | see below |
 | `ui_theme_toggle` | cycles light, dark, then system |
+| `ui_dropdown_menu` | see [Dropdown menu](#dropdown-menu) |
+| `ui_confirm_dialog` | see [Confirm dialog](#confirm-dialog); render once before `</body>` |
 | `ui_icon` | `ui_icon(:copy, size: 16, aria_label: nil)`; `size` goes through `Integer()` and raises if invalid |
 
 ```erb
@@ -98,6 +100,49 @@ Variants and sizes are validated and raise `ArgumentError` listing the allowed v
 - `ui_button "Open", href: path` renders a link. With `params:`, they are appended to the query string.
 - Any `method:` other than GET renders `button_to`: `ui_button "Delete", href: path, method: :delete, params: { id: 1 }`.
   `params:` become hidden inputs, `form:` sets attributes on the form, and `form_class` defaults to `inline-flex`.
+
+- `confirm:` asks before acting, via the [confirm dialog](#confirm-dialog). It takes a String or
+  `{ message:, title:, button:, variant: }` (`variant: :destructive` styles the confirm button).
+  `ui_button "Delete", href: path, method: :delete, confirm: { message: "Delete it?", title: "Delete", button: "Delete", variant: :destructive }`.
+  The older `form: { data: { turbo_confirm: "..." } }` still works. Turbo only confirms form submissions, so on a plain
+  `<button>` (no `href:`) use `type: "submit"` inside a form.
+
+### Dropdown menu
+
+```erb
+<%= ui_dropdown_menu(label: "Server actions", icon: :more, align: :end) do |m| %>
+  <%= m.item "Open", href: server_path(@server), icon: :external_link %>
+  <%= m.item "Refresh", href: refresh_server_path(@server), method: :post, params: { full: 1 }, icon: :refresh %>
+  <%= m.separator %>
+  <%= m.item "Delete", href: server_path(@server), method: :delete, variant: :destructive, icon: :trash,
+        confirm: { message: "Delete this server?", title: "Delete server", button: "Delete", variant: :destructive } %>
+<% end %>
+```
+
+- Options: `label:` is the trigger's accessible name (default `"More actions"`), `icon:` the trigger icon (default `:more`),
+  `align:` is `:end` (default, menu right-aligned to the trigger) or `:start`. `class:` and HTML attributes go on the root element.
+- `m.item label, href:` takes `method:` (non-GET renders a `button_to` form), `params:` (query string for GET, hidden inputs otherwise),
+  `icon:`, `variant: :default | :destructive` and `confirm:` (non-GET items only, as for `ui_button`).
+- Keyboard: Enter, Space or Down on the trigger opens the menu (Up opens on the last item). Up, Down, Home and End move between items.
+  Escape closes and returns focus to the trigger. Tab and an outside click close it. Activating an item closes the menu and returns focus to the trigger.
+- It needs JavaScript: the menu is `hidden` until the Stimulus `ui-dropdown` controller connects.
+
+### Confirm dialog
+
+Render `ui_confirm_dialog` exactly once, just before `</body>` (the install generator inserts it):
+
+```erb
+    <%= ui_confirm_dialog %>
+  </body>
+```
+
+It replaces Turbo's `window.confirm` for every `data-turbo-confirm` (links, forms and buttons) by setting
+`Turbo.config.forms.confirm`. This needs Turbo 8 / turbo-rails 2 and the `@hotwired/turbo-rails` importmap pin in the host app.
+Without the dialog on the page, or on an older Turbo, the native confirm is used.
+
+Optional attributes customize the dialog: `data-confirm-title` (default "Are you sure?"), `data-confirm-button` (default "Confirm")
+and `data-confirm-variant="destructive"` (red confirm button). They are read from the submitter, then the element Turbo confirms,
+then the clicked `data-turbo-confirm` link. Cancel, Escape and a backdrop click all mean "no".
 
 ### Flash
 
@@ -150,7 +195,7 @@ end
 
 Semantic icon names are Symbols (`ui_icon(:copy)`): `copy check sun moon monitor info alert_triangle
 alert_circle check_circle x plus server terminal refresh pencil trash external_link help arrow_left
-log_out hard_drive key play plug`. Strings are raw provider names and are passed through as-is.
+log_out hard_drive key play plug more`. Strings are raw provider names and are passed through as-is.
 With iconify, `icon_set` qualifies any name that is not already `set:name`. `icon_aliases` override
 semantic names (`{ copy: "clipboard" }`).
 

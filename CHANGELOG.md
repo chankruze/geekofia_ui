@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- New `ui_dropdown_menu` (`m.item`, `m.separator`): accessible menu button with keyboard navigation, `align:`, item `method:`, `params:`, `icon:` and `variant: :destructive`. Needs JavaScript.
+- New `ui_confirm_dialog` and `ui-confirm` Stimulus controller: replaces Turbo's `window.confirm` for `data-turbo-confirm` (Turbo 8 / turbo-rails 2) with a styled dialog; supports `data-confirm-title`, `data-confirm-button` and `data-confirm-variant`.
+- `confirm:` option on `ui_button` and dropdown items (String or `{ message:, title:, button:, variant: }`).
+- New `:more` semantic icon (Lucide `ellipsis`).
+- The install generator adds `ui_confirm_dialog` before `</body>` in the application layout.
+
 ## 0.1.2
 
 - Re-release of the 0.1.1 changes. The `v0.1.1` git tag points at an incomplete commit (no version bump, changelog or README fixes); use `v0.1.2` instead.

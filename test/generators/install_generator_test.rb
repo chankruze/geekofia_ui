@@ -14,7 +14,7 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
     File.write(File.join(destination_root, "app/javascript/controllers/index.js"),
                %(import { application } from "controllers/application"\nimport { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"\neagerLoadControllersFrom("controllers", application)\n))
     File.write(File.join(destination_root, "app/views/layouts/application.html.erb"),
-               %(<html>\n  <head>\n    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>\n  </head>\n</html>\n))
+               %(<html>\n  <head>\n    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>\n  </head>\n  <body>\n    <%= yield %>\n  </body>\n</html>\n))
   end
 
   test "installs once and is idempotent" do
@@ -31,6 +31,24 @@ class GeekofiaUi::InstallGeneratorTest < Rails::Generators::TestCase
       assert layout.index("ui_head_tags") < layout.index("stylesheet_link_tag")
     end
     assert_file "config/initializers/geekofia_ui.rb", /GeekofiaUi.configure/
+    assert_file "app/views/layouts/application.html.erb" do |layout|
+      assert_equal 1, layout.scan("ui_confirm_dialog").size
+      assert layout.index("ui_confirm_dialog") < layout.index("</body>")
+    end
+  end
+
+  test "layout without a closing body tag is skipped with a hint for the confirm dialog" do
+    write "app/views/layouts/application.html.erb", "<html><head><%= stylesheet_link_tag :app %></head></html>\n"
+    out = run_generator
+    assert_no_match(/ui_confirm_dialog/, read("app/views/layouts/application.html.erb"))
+    assert_match(/add <%= ui_confirm_dialog %> before <\/body> of app\/views\/layouts\/application.html.erb/, out)
+  end
+
+  test "confirm dialog goes before the last closing body tag" do
+    write "app/views/layouts/application.html.erb", "<!-- </body> -->\n<body>\n</body>\n"
+    run_generator
+    layout = read("app/views/layouts/application.html.erb")
+    assert_equal "<!-- </body> -->\n<body>\n    <%= ui_confirm_dialog %>\n</body>\n", layout
   end
 
   test "appends the controllers line on its own line when index.js has no trailing newline" do

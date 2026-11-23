@@ -44,6 +44,16 @@ module GeekofiaUi
         inject_into_file LAYOUT, "    <%= ui_head_tags %>\n", after: /\A#{Regexp.escape(match.pre_match)}/
       end
 
+      def add_confirm_dialog
+        return skip(LAYOUT) unless exist?(LAYOUT)
+        content = read(LAYOUT)
+        return identical(LAYOUT) if content.include?("ui_confirm_dialog")
+        index = content.rindex("</body>")
+        return say_status(:skip, "add <%= ui_confirm_dialog %> before </body> of #{LAYOUT}", :yellow) unless index
+        line_start = content.rindex("\n", index)&.succ || 0
+        inject_into_file LAYOUT, "    <%= ui_confirm_dialog %>\n", after: /\A#{Regexp.escape(content[0...line_start])}/
+      end
+
       private
 
       def exist?(path) = File.exist?(File.join(destination_root, path))
